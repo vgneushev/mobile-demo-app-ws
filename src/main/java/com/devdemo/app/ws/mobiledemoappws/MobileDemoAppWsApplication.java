@@ -9,11 +9,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @SpringBootApplication
-@EnableAutoConfiguration
-@ComponentScan(basePackages = {"com.devdemo.app.ws.mobiledemoappws.*" })
-@EnableTransactionManagement
-@EnableJpaRepositories("com.devdemo.app.ws.mobiledemoappws.*")
-@EntityScan("com.devdemo.app.ws.mobiledemoappws.*")
 public class MobileDemoAppWsApplication {
 
     public static void main(String[] args) {

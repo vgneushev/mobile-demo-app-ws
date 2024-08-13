@@ -1,4 +1,4 @@
-package com.devdemo.app.ws.mobiledemoappws;
+package com.devdemo.app.ws.mobiledemoappws.repository;
 
 import com.devdemo.app.ws.mobiledemoappws.io.entity.UserEntity;
 import org.springframework.data.repository.CrudRepository;
