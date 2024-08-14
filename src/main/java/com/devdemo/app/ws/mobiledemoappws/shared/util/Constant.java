@@ -1,4 +1,4 @@
-package com.devdemo.app.ws.mobiledemoappws.util;
+package com.devdemo.app.ws.mobiledemoappws.shared.util;
 
 public class Constant {
     public static final int ENCRYPTED_PASSWORD_LENGTH = 8;

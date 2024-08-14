@@ -7,16 +7,21 @@ import com.devdemo.app.ws.mobiledemoappws.shared.dto.UserDto;
 import io.qala.datagen.RandomShortApi;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import static com.devdemo.app.ws.mobiledemoappws.util.Constant.ENCRYPTED_PASSWORD_LENGTH;
-import static com.devdemo.app.ws.mobiledemoappws.util.Constant.USER_ID_LENGTH;
+import static com.devdemo.app.ws.mobiledemoappws.shared.util.Constant.USER_ID_LENGTH;
 
 @Component
 public class UserServiceImpl implements UserService {
 
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    BCryptPasswordEncoder passwordEncoder;
 
     @Override
     public UserDto createUser(UserDto userDto) {
@@ -29,7 +34,7 @@ public class UserServiceImpl implements UserService {
 
         UserEntity userEntity = new UserEntity();
         BeanUtils.copyProperties(userDto, userEntity);
-        userEntity.setEncryptedPassword(RandomShortApi.alphanumeric(ENCRYPTED_PASSWORD_LENGTH));
+        userEntity.setEncryptedPassword(passwordEncoder.encode(userDto.getPassword()));
         userEntity.setUserId(RandomShortApi.alphanumeric(USER_ID_LENGTH));
 
         UserEntity savedUserDetails = userRepository.save(userEntity);
@@ -39,4 +44,8 @@ public class UserServiceImpl implements UserService {
         return returnValue;
     }
 
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return null;
+    }
 }
