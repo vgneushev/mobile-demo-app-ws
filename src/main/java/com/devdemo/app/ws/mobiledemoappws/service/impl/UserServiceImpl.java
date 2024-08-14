@@ -5,6 +5,7 @@ import com.devdemo.app.ws.mobiledemoappws.io.entity.UserEntity;
 import com.devdemo.app.ws.mobiledemoappws.service.UserService;
 import com.devdemo.app.ws.mobiledemoappws.shared.dto.UserDto;
 import io.qala.datagen.RandomShortApi;
+import lombok.NonNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,7 +25,7 @@ public class UserServiceImpl implements UserService {
     BCryptPasswordEncoder passwordEncoder;
 
     @Override
-    public UserDto createUser(UserDto userDto) {
+    public UserDto createUser(@NonNull final UserDto userDto) {
 
         UserEntity storedUserDetails = userRepository.findByEmail(userDto.getEmail());
 
@@ -45,7 +46,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(@NonNull final String username) throws UsernameNotFoundException {
         return null;
     }
 }
