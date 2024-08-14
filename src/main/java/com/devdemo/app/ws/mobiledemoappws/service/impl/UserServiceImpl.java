@@ -21,6 +21,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto createUser(UserDto userDto) {
 
+        UserEntity storedUserDetails = userRepository.findByEmail(userDto.getEmail());
+
+        if(storedUserDetails != null) {
+            throw new RuntimeException("User already exist");
+        }
+
         UserEntity userEntity = new UserEntity();
         BeanUtils.copyProperties(userDto, userEntity);
         userEntity.setEncryptedPassword(RandomShortApi.alphanumeric(ENCRYPTED_PASSWORD_LENGTH));

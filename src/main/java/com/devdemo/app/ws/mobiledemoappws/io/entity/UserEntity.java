@@ -4,6 +4,8 @@ import lombok.*;
 import org.springframework.lang.Nullable;
 
 import jakarta.persistence.*;
+
+import java.io.Serial;
 import java.io.Serializable;
 
 @Getter
@@ -14,6 +16,7 @@ import java.io.Serializable;
 @ToString
 public class UserEntity implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 123456785432L;
 
     @Id
@@ -29,7 +32,7 @@ public class UserEntity implements Serializable {
     @Column(nullable = false, length = 50)
     private String lastName;
 
-    @Column(nullable = false, length = 120)
+    @Column(nullable = false, length = 120, unique = true)
     private String email;
 
     @Column(nullable = false)
