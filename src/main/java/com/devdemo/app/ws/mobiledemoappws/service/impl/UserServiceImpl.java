@@ -8,10 +8,13 @@ import io.qala.datagen.RandomShortApi;
 import lombok.NonNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
 
 import static com.devdemo.app.ws.mobiledemoappws.shared.util.Constant.USER_ID_LENGTH;
 
@@ -46,7 +49,32 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public UserDto getUser(@NonNull String email) {
+
+        UserEntity storedUserDetails = userRepository.findByEmail(email);
+
+        if(storedUserDetails == null) {
+            throw new RuntimeException("User not found");
+        }
+        UserDto returnValue = new UserDto();
+        BeanUtils.copyProperties(storedUserDetails, returnValue);
+
+        return returnValue;
+    }
+
+    /**
+     *
+     * @param username in this case email
+     * @return User data
+     * @throws UsernameNotFoundException
+     */
+    @Override
     public UserDetails loadUserByUsername(@NonNull final String username) throws UsernameNotFoundException {
-        return null;
+        UserEntity userEntity = userRepository.findByEmail(username);
+        if (username==null) {
+            throw new UsernameNotFoundException(username);
+        }
+
+        return new User(username, userEntity.getEncryptedPassword(), new ArrayList<>());
     }
 }
