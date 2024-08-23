@@ -56,6 +56,22 @@ public class UserServiceImpl implements UserService {
         if(storedUserDetails == null) {
             throw new RuntimeException("User not found");
         }
+
+        UserDto returnValue = new UserDto();
+        BeanUtils.copyProperties(storedUserDetails, returnValue);
+
+        return returnValue;
+    }
+
+    @Override
+    public UserDto getUserById(@NonNull String id) {
+
+        UserEntity storedUserDetails = userRepository.findByUserId(id);
+
+        if(storedUserDetails == null) {
+            throw new RuntimeException("User not found");
+        }
+
         UserDto returnValue = new UserDto();
         BeanUtils.copyProperties(storedUserDetails, returnValue);
 
