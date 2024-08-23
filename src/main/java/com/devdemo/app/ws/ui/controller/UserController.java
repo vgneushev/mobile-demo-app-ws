@@ -1,5 +1,6 @@
 package com.devdemo.app.ws.ui.controller;
 
+import com.devdemo.app.ws.exception.UserServiceException;
 import com.devdemo.app.ws.service.UserService;
 import com.devdemo.app.ws.shared.dto.UserDto;
 import com.devdemo.app.ws.ui.model.request.UserDetailsRequestModel;
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     @Autowired
-    UserService userService;
+    private UserService userService;
 
     @GetMapping(
             path = "/{id}",
@@ -31,10 +32,10 @@ public class UserController {
             consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public UserDetailsResponseModel createUser(
-            @RequestBody final UserDetailsRequestModel requestModel) throws Exception {
+            @RequestBody final UserDetailsRequestModel requestModel) throws UserServiceException {
 
         if(requestModel.getFirstName().isEmpty())
-            throw new Exception(ErrorMessages.MISSING_REQUIRED_FIELD.getErrorMessage());
+            throw new UserServiceException(ErrorMessages.MISSING_REQUIRED_FIELD.getErrorMessage());
 
         UserDetailsResponseModel responseUser = new UserDetailsResponseModel();
         UserDto userDto = new UserDto();
