@@ -16,7 +16,7 @@ public class AppExceptionsHandler {
     @ExceptionHandler(value = {UserServiceException.class})
     public ResponseEntity<Object> handlerUserServiceException(UserServiceException exception, WebRequest request) {
         ErrorMessage errorMessage = new ErrorMessage(new Date(), exception.getMessage());
-        return new ResponseEntity<>(errorMessage, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(errorMessage, new HttpHeaders(), HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
     @ExceptionHandler(value = {Exception.class})
