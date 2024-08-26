@@ -1,4 +1,4 @@
-package com.devdemo.app.ws.ui.model.response;
+package com.devdemo.app.ws.shared.util;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -1,10 +1,12 @@
 package com.devdemo.app.ws.service.impl;
 
+import com.devdemo.app.ws.exception.UserServiceException;
 import com.devdemo.app.ws.service.UserService;
 import com.devdemo.app.ws.shared.dto.UserDto;
 import com.devdemo.app.ws.shared.util.Constant;
 import com.devdemo.app.ws.repository.UserRepository;
 import com.devdemo.app.ws.io.entity.UserEntity;
+import com.devdemo.app.ws.shared.util.ErrorMessages;
 import io.qala.datagen.RandomShortApi;
 import lombok.NonNull;
 import org.springframework.beans.BeanUtils;
@@ -28,11 +30,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto createUser(@NonNull final UserDto userDto) {
-
+        UserDto returnValue = new UserDto();
         UserEntity storedUserDetails = userRepository.findByEmail(userDto.getEmail());
 
         if(storedUserDetails != null) {
-            throw new RuntimeException("User already exist");
+            throw new UserServiceException(ErrorMessages.RECORD_ALREADY_EXIST.getErrorMessage());
         }
 
         UserEntity userEntity = new UserEntity();
@@ -41,22 +43,38 @@ public class UserServiceImpl implements UserService {
         userEntity.setUserId(RandomShortApi.alphanumeric(Constant.USER_ID_LENGTH));
 
         UserEntity savedUserDetails = userRepository.save(userEntity);
-        UserDto returnValue = new UserDto();
         BeanUtils.copyProperties(savedUserDetails, returnValue);
 
         return returnValue;
     }
 
     @Override
-    public UserDto getUser(@NonNull String email) {
+    public UserDto updateUser(@NonNull String userId, @NonNull UserDto userDto) {
+        UserDto returnValue = new UserDto();
+        UserEntity storedUserDetails = userRepository.findByUserId(userId);
 
+        if(storedUserDetails == null) {
+            throw new UserServiceException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
+        }
+
+        storedUserDetails.setFirstName(userDto.getFirstName());
+        storedUserDetails.setLastName(userDto.getLastName());
+
+        UserEntity updatedUserDetails = userRepository.save(storedUserDetails);
+        BeanUtils.copyProperties(updatedUserDetails, returnValue);
+
+        return returnValue;
+    }
+
+    @Override
+    public UserDto getUser(@NonNull String email) {
+        UserDto returnValue = new UserDto();
         UserEntity storedUserDetails = userRepository.findByEmail(email);
 
         if(storedUserDetails == null) {
-            throw new RuntimeException("User not found");
+            throw new UserServiceException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
         }
 
-        UserDto returnValue = new UserDto();
         BeanUtils.copyProperties(storedUserDetails, returnValue);
 
         return returnValue;
@@ -64,14 +82,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto getUserById(@NonNull String id) {
-
+        UserDto returnValue = new UserDto();
         UserEntity storedUserDetails = userRepository.findByUserId(id);
 
         if(storedUserDetails == null) {
             throw new RuntimeException("User not found");
         }
 
-        UserDto returnValue = new UserDto();
         BeanUtils.copyProperties(storedUserDetails, returnValue);
 
         return returnValue;
