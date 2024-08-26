@@ -4,6 +4,7 @@ import com.devdemo.app.ws.ui.model.response.ErrorMessage;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
@@ -17,6 +18,11 @@ public class AppExceptionsHandler {
     public ResponseEntity<Object> handlerUserServiceException(UserServiceException exception, WebRequest request) {
         ErrorMessage errorMessage = new ErrorMessage(new Date(), exception.getMessage());
         return new ResponseEntity<>(errorMessage, new HttpHeaders(), HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+    @ExceptionHandler(value = {UsernameNotFoundException.class})
+    public ResponseEntity<Object> handlerUsernameNotFoundException(UsernameNotFoundException exception, WebRequest request) {
+        ErrorMessage errorMessage = new ErrorMessage(new Date(), exception.getMessage());
+        return new ResponseEntity<>(errorMessage, new HttpHeaders(), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(value = {Exception.class})

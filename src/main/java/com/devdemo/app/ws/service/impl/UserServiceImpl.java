@@ -54,7 +54,7 @@ public class UserServiceImpl implements UserService {
         UserEntity storedUserDetails = userRepository.findByUserId(userId);
 
         if(storedUserDetails == null) {
-            throw new UserServiceException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
+            throw new UsernameNotFoundException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
         }
 
         storedUserDetails.setFirstName(userDto.getFirstName());
@@ -72,12 +72,23 @@ public class UserServiceImpl implements UserService {
         UserEntity storedUserDetails = userRepository.findByEmail(email);
 
         if(storedUserDetails == null) {
-            throw new UserServiceException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
+            throw new UsernameNotFoundException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
         }
 
         BeanUtils.copyProperties(storedUserDetails, returnValue);
 
         return returnValue;
+    }
+
+    @Override
+    public void deleteUser(@NonNull String userId) {
+        UserEntity storedUserDetails = userRepository.findByUserId(userId);
+
+        if(storedUserDetails == null) {
+            throw new UsernameNotFoundException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
+        }
+
+        userRepository.delete(storedUserDetails);
     }
 
     @Override
