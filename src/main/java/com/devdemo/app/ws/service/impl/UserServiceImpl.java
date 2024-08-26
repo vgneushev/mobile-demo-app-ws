@@ -11,13 +11,18 @@ import io.qala.datagen.RandomShortApi;
 import lombok.NonNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.data.domain.Page;
 
+
+import org.springframework.data.domain.Pageable;
 import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class UserServiceImpl implements UserService {
@@ -49,7 +54,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto updateUser(@NonNull String userId, @NonNull UserDto userDto) {
+    public UserDto updateUser(@NonNull final String userId, @NonNull final UserDto userDto) {
         UserDto returnValue = new UserDto();
         UserEntity storedUserDetails = userRepository.findByUserId(userId);
 
@@ -67,7 +72,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto getUser(@NonNull String email) {
+    public UserDto getUser(@NonNull final String email) {
         UserDto returnValue = new UserDto();
         UserEntity storedUserDetails = userRepository.findByEmail(email);
 
@@ -81,7 +86,22 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void deleteUser(@NonNull String userId) {
+    public List<UserDto> getUsers(final int page, final int limit) {
+        List<UserDto> returnUsers = new ArrayList<>(limit);
+        Pageable pageable = PageRequest.of(page, limit);
+        Page<UserEntity> usersPage = userRepository.findAll(pageable);
+        List<UserEntity> users = usersPage.getContent();
+        users.forEach(userEntity -> {
+            UserDto userDto = new UserDto();
+            BeanUtils.copyProperties(userEntity, userDto);
+            returnUsers.add(userDto);
+        });
+
+        return returnUsers;
+    }
+
+    @Override
+    public void deleteUser(@NonNull final String userId) {
         UserEntity storedUserDetails = userRepository.findByUserId(userId);
 
         if(storedUserDetails == null) {
@@ -92,7 +112,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto getUserById(@NonNull String id) {
+    public UserDto getUserById(@NonNull final String id) {
         UserDto returnValue = new UserDto();
         UserEntity storedUserDetails = userRepository.findByUserId(id);
 
