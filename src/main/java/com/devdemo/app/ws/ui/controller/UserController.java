@@ -5,6 +5,9 @@ import com.devdemo.app.ws.service.UserService;
 import com.devdemo.app.ws.shared.dto.UserDto;
 import com.devdemo.app.ws.ui.model.request.UserDetailsRequestModel;
 import com.devdemo.app.ws.shared.util.ErrorMessages;
+import com.devdemo.app.ws.ui.model.response.operation.OperationStatusModel;
+import com.devdemo.app.ws.ui.model.response.operation.RequestOperationName;
+import com.devdemo.app.ws.ui.model.response.operation.RequestOperationStatus;
 import com.devdemo.app.ws.ui.model.response.UserDetailsResponseModel;
 import lombok.NonNull;
 import org.springframework.beans.BeanUtils;
@@ -65,9 +68,16 @@ public class UserController {
         return responseUser;
     }
 
-    @DeleteMapping
-    public String deleteUser() {
-        return "delete user was called";
+    @DeleteMapping(
+            path = "/{id}",
+            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public OperationStatusModel deleteUser(@PathVariable @NonNull final String id) {
+        final OperationStatusModel responseModel = new OperationStatusModel(
+                RequestOperationStatus.SUCCESS.name(), RequestOperationName.DELETE.name());
+
+        userService.deleteUser(id);
+
+        return responseModel;
     }
 
 }
