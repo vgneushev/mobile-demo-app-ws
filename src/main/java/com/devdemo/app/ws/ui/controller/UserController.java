@@ -10,6 +10,7 @@ import com.devdemo.app.ws.ui.model.response.operation.RequestOperationName;
 import com.devdemo.app.ws.ui.model.response.operation.RequestOperationStatus;
 import com.devdemo.app.ws.ui.model.response.UserDetailsResponseModel;
 import lombok.NonNull;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -17,7 +18,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 @RestController
 @RequestMapping("users")
@@ -25,6 +25,8 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    private final ModelMapper mapper = new ModelMapper();
 
     @GetMapping(
             path = "/{id}",
@@ -62,12 +64,9 @@ public class UserController {
             throw new UserServiceException(ErrorMessages.MISSING_REQUIRED_FIELD.getErrorMessage());
         }
 
-        UserDetailsResponseModel responseUser = new UserDetailsResponseModel();
-        UserDto userDto = new UserDto();
-        BeanUtils.copyProperties(requestModel, userDto);
-        UserDto createdUser = userService.createUser(userDto);
-        BeanUtils.copyProperties(createdUser, responseUser);
-        return responseUser;
+        final UserDto userDto =  mapper.map(requestModel, UserDto.class);
+        final UserDto createdUser = userService.createUser(userDto);
+        return mapper.map(createdUser, UserDetailsResponseModel.class);
     }
 
     @PutMapping(

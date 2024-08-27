@@ -6,6 +6,7 @@ import lombok.Data;
 public class AddressDto {
     private static final long serialVersionUID = 2L;
     private long id;
+    private String addressId;
     private String city;
     private String country;
     private String streetName;
