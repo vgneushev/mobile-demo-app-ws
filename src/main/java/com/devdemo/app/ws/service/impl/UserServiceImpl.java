@@ -51,8 +51,10 @@ public class UserServiceImpl implements UserService {
         userEntity.setEncryptedPassword(passwordEncoder.encode(userDto.getPassword()));
         userEntity.setUserId(RandomShortApi.alphanumeric(Constant.USER_ID_LENGTH));
         userEntity.getAddresses().forEach(
-                addressEntity ->
-                    addressEntity.setAddressId(RandomShortApi.alphanumeric(Constant.ADDRESS_ID_LENGTH)));
+                addressEntity -> {
+                    addressEntity.setAddressId(RandomShortApi.alphanumeric(Constant.ADDRESS_ID_LENGTH));
+                    addressEntity.setUserDetails(userEntity);
+                });
 
         final UserEntity savedUserDetails = userRepository.save(userEntity);
         return mapper.map(savedUserDetails, UserDto.class);

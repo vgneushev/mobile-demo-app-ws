@@ -1,6 +1,5 @@
 package com.devdemo.app.ws.io.entity;
 
-import com.devdemo.app.ws.shared.dto.UserDto;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -41,4 +40,17 @@ public class AddressEntity implements Serializable {
     @JoinColumn(name = "users_id")
     private UserEntity userDetails;
 
+    @Override
+    public String toString() {
+        return "AddressEntity{" +
+                "id=" + id +
+                ", addressId='" + addressId + '\'' +
+                ", city='" + city + '\'' +
+                ", country='" + country + '\'' +
+                ", streetName='" + streetName + '\'' +
+                ", postalCode='" + postalCode + '\'' +
+                ", type='" + type + '\'' +
+                ", userDetails=" + userDetails.getId() +
+                '}';
+    }
 }
