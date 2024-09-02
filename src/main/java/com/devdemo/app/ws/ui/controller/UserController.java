@@ -1,22 +1,28 @@
 package com.devdemo.app.ws.ui.controller;
 
 import com.devdemo.app.ws.exception.UserServiceException;
+import com.devdemo.app.ws.service.AddressService;
 import com.devdemo.app.ws.service.UserService;
+import com.devdemo.app.ws.shared.dto.AddressDto;
 import com.devdemo.app.ws.shared.dto.UserDto;
 import com.devdemo.app.ws.ui.model.request.UserDetailsRequestModel;
 import com.devdemo.app.ws.shared.util.ErrorMessages;
+import com.devdemo.app.ws.ui.model.response.AddressesResponseModel;
 import com.devdemo.app.ws.ui.model.response.operation.OperationStatusModel;
 import com.devdemo.app.ws.ui.model.response.operation.RequestOperationName;
 import com.devdemo.app.ws.ui.model.response.operation.RequestOperationStatus;
 import com.devdemo.app.ws.ui.model.response.UserDetailsResponseModel;
 import lombok.NonNull;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @RestController
@@ -25,6 +31,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private AddressService addressService;
 
     private final ModelMapper mapper = new ModelMapper();
 
@@ -97,6 +106,21 @@ public class UserController {
         userService.deleteUser(id);
 
         return responseModel;
+    }
+
+    @GetMapping(
+            path = "/{id}/addresses",
+            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public Collection<AddressesResponseModel> getUserAddresses(@PathVariable @NonNull final String id) {
+        final Type listType = new TypeToken<List<AddressesResponseModel>>() {}.getType();
+        Collection<AddressesResponseModel> responseModels = new ArrayList<>();
+
+        Collection<AddressDto> addressDtos = addressService.getAddresses(id);
+        if (addressDtos != null) {
+            responseModels = mapper.map(addressDtos, listType);
+        }
+
+        return responseModels;
     }
 
 }
