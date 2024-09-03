@@ -13,9 +13,9 @@ import com.devdemo.app.ws.ui.model.response.operation.RequestOperationName;
 import com.devdemo.app.ws.ui.model.response.operation.RequestOperationStatus;
 import com.devdemo.app.ws.ui.model.response.UserDetailsResponseModel;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -24,8 +24,10 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
+@Slf4j
 @RequestMapping("users")
 public class UserController {
 
@@ -41,26 +43,21 @@ public class UserController {
             path = "/{id}",
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public UserDetailsResponseModel getUser(@PathVariable @NonNull final String id) {
-        UserDto user = userService.getUserById(id);
-        UserDetailsResponseModel responseModel = new UserDetailsResponseModel();
-        BeanUtils.copyProperties(user, responseModel);
-        return responseModel;
+        return mapper.map(
+                userService.getUserById(id),
+                UserDetailsResponseModel.class);
     }
 
     @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public List<UserDetailsResponseModel> getUsers(
             @RequestParam(value = "page", defaultValue = "0") final int page,
             @RequestParam(value = "limit", defaultValue = "25") final int limit) {
-        List<UserDetailsResponseModel> responseModels = new ArrayList<>();
-
-        List<UserDto> users = userService.getUsers(page, limit);
-        users.forEach(userDto -> {
-            UserDetailsResponseModel user = new UserDetailsResponseModel();
-            BeanUtils.copyProperties(userDto, user);
-            responseModels.add(user);
-        });
-
-        return responseModels;
+        return  userService.getUsers(page, limit)
+                .stream()
+                .map(userDto -> mapper.map(
+                        userDto,
+                        UserDetailsResponseModel.class))
+                .collect(Collectors.toList());
     }
 
     @PostMapping(
@@ -69,7 +66,7 @@ public class UserController {
     public UserDetailsResponseModel createUser(
             @RequestBody @NonNull final UserDetailsRequestModel requestModel) throws UserServiceException {
 
-        if (requestModel.getFirstName().isEmpty()) {
+        if (requestModel.getFirstName().isEmpty()) { // TODO verify required fields
             throw new UserServiceException(ErrorMessages.MISSING_REQUIRED_FIELD.getErrorMessage());
         }
 
@@ -86,26 +83,20 @@ public class UserController {
             @RequestBody @NonNull final UserDetailsRequestModel requestModel,
             @PathVariable @NonNull final String id) {
 
-        UserDto userDto = new UserDto();
-        UserDetailsResponseModel responseUser = new UserDetailsResponseModel();
-        BeanUtils.copyProperties(requestModel, userDto);
-
-        UserDto updatedUser = userService.updateUser(id, userDto);
-        BeanUtils.copyProperties(updatedUser, responseUser);
-
-        return responseUser;
+        final UserDto userDto = mapper.map(requestModel, UserDto.class);
+        final UserDto updatedUser = userService.updateUser(id, userDto);
+        return  mapper.map(updatedUser, UserDetailsResponseModel.class);
     }
 
     @DeleteMapping(
             path = "/{id}",
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public OperationStatusModel deleteUser(@PathVariable @NonNull final String id) {
-        final OperationStatusModel responseModel = new OperationStatusModel(
-                RequestOperationStatus.SUCCESS.name(), RequestOperationName.DELETE.name());
 
         userService.deleteUser(id);
 
-        return responseModel;
+        return new OperationStatusModel(
+                RequestOperationStatus.SUCCESS.name(), RequestOperationName.DELETE.name());
     }
 
     @GetMapping(

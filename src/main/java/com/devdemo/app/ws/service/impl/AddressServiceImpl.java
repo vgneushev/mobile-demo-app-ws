@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 @Service
 public class AddressServiceImpl implements AddressService {
@@ -28,18 +29,14 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     public Collection<AddressDto> getAddresses(final @NonNull String userId) {
-        Collection<AddressDto> returnValue = new ArrayList<>();
-
         final UserEntity userEntity = userRepository.findByUserId(userId);
         if(userEntity == null) {
-            return returnValue;
+            return new ArrayList<>();
         }
 
-        Collection<AddressEntity> address = addressRepository.findAllByUserDetails(userEntity);
-        address
-                .forEach(
-                        addressEntity ->
-                                returnValue.add(mapper.map(addressEntity, AddressDto.class)));
-        return returnValue;
+        return addressRepository.findAllByUserDetails(userEntity)
+                .stream()
+                .map(addressEntity -> mapper.map(addressEntity, AddressDto.class))
+                .collect(Collectors.toList());
     }
 }
