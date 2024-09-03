@@ -78,6 +78,7 @@ public class UserServiceImpl implements UserService {
         storedUserDetails.setLastName(userDto.getLastName());
 
         if (!userDto.getAddresses().isEmpty()) {
+            // TODO if each field value is not null
             final Type addressCollection = new TypeToken<Collection<AddressEntity>>() {}.getType();
             storedUserDetails.setAddresses(mapper.map(userDto.getAddresses(), addressCollection));
         }
