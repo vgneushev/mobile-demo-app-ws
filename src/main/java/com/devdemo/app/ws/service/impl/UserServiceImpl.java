@@ -8,9 +8,11 @@ import com.devdemo.app.ws.shared.util.Constant;
 import com.devdemo.app.ws.repository.UserRepository;
 import com.devdemo.app.ws.io.entity.UserEntity;
 import com.devdemo.app.ws.shared.util.ErrorMessages;
+import com.devdemo.app.ws.ui.model.response.AddressesResponseModel;
 import io.qala.datagen.RandomShortApi;
 import lombok.NonNull;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -24,7 +26,9 @@ import org.springframework.data.domain.Page;
 
 import org.springframework.data.domain.Pageable;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Component
@@ -49,6 +53,7 @@ public class UserServiceImpl implements UserService {
         UserEntity userEntity = mapper.map(userDto, UserEntity.class);
         userEntity.setEncryptedPassword(passwordEncoder.encode(userDto.getPassword()));
         userEntity.setUserId(RandomShortApi.alphanumeric(Constant.USER_ID_LENGTH));
+
         userEntity.getAddresses().forEach(
                 addressEntity -> {
                     addressEntity.setAddressId(RandomShortApi.alphanumeric(Constant.ADDRESS_ID_LENGTH));
@@ -68,13 +73,16 @@ public class UserServiceImpl implements UserService {
             throw new UsernameNotFoundException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
         }
 
+        // TODO if field value is not null
         storedUserDetails.setFirstName(userDto.getFirstName());
         storedUserDetails.setLastName(userDto.getLastName());
 
-        UserEntity updatedUserDetails = userRepository.save(storedUserDetails);
-        BeanUtils.copyProperties(updatedUserDetails, returnValue);
+        if (!userDto.getAddresses().isEmpty()) {
+            final Type addressCollection = new TypeToken<Collection<AddressEntity>>() {}.getType();
+            storedUserDetails.setAddresses(mapper.map(userDto.getAddresses(), addressCollection));
+        }
 
-        return returnValue;
+        return mapper.map(userRepository.save(storedUserDetails), UserDto.class);
     }
 
     @Override

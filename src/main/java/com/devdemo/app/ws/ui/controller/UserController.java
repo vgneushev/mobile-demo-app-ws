@@ -103,15 +103,25 @@ public class UserController {
             path = "/{id}/addresses",
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public Collection<AddressesResponseModel> getUserAddresses(@PathVariable @NonNull final String id) {
-        final Type listType = new TypeToken<List<AddressesResponseModel>>() {}.getType();
+        final Type addressesCollection = new TypeToken<Collection<AddressesResponseModel>>() {}.getType();
         Collection<AddressesResponseModel> responseModels = new ArrayList<>();
 
         Collection<AddressDto> addressDtos = addressService.getAddresses(id);
         if (addressDtos != null) {
-            responseModels = mapper.map(addressDtos, listType);
+            responseModels = mapper.map(addressDtos, addressesCollection);
         }
 
         return responseModels;
+    }
+
+    @GetMapping(
+            path = "/{userId}/addresses/{addressId}",
+            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public AddressesResponseModel getUserAddress(
+            @PathVariable @NonNull final String addressId) {
+        return mapper.map(
+                addressService.getUserAddress(addressId),
+                AddressesResponseModel.class);
     }
 
 }
