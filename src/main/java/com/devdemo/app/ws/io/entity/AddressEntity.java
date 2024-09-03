@@ -40,6 +40,7 @@ public class AddressEntity implements Serializable {
     @JoinColumn(name = "users_id")
     private UserEntity userDetails;
 
+    //TODO: Override toString to avoid stackOverflow exception in debug mode
     @Override
     public String toString() {
         return "AddressEntity{" +
