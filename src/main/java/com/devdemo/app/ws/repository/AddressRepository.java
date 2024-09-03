@@ -11,4 +11,6 @@ import java.util.Collection;
 @Repository
 public interface AddressRepository extends CrudRepository<AddressEntity, Long> {
     Collection<AddressEntity> findAllByUserDetails(@NonNull final UserEntity userEntity);
+
+    AddressEntity findByAddressId(@NonNull final String addressId);
 }

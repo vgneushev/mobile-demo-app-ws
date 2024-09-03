@@ -7,4 +7,6 @@ import java.util.Collection;
 
 public interface AddressService {
     Collection<AddressDto> getAddresses(final @NonNull String userId);
+
+    AddressDto getUserAddress(final @NonNull String addressId);
 }
