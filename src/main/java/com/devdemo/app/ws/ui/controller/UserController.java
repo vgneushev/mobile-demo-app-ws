@@ -17,6 +17,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -52,7 +56,7 @@ public class UserController {
     public List<UserDetailsResponseModel> getUsers(
             @RequestParam(value = "page", defaultValue = "0") final int page,
             @RequestParam(value = "limit", defaultValue = "25") final int limit) {
-        return  userService.getUsers(page, limit)
+        return userService.getUsers(page, limit)
                 .stream()
                 .map(userDto -> mapper.map(
                         userDto,
@@ -70,7 +74,7 @@ public class UserController {
             throw new UserServiceException(ErrorMessages.MISSING_REQUIRED_FIELD.getErrorMessage());
         }
 
-        final UserDto userDto =  mapper.map(requestModel, UserDto.class);
+        final UserDto userDto = mapper.map(requestModel, UserDto.class);
         final UserDto createdUser = userService.createUser(userDto);
         return mapper.map(createdUser, UserDetailsResponseModel.class);
     }
@@ -85,7 +89,7 @@ public class UserController {
 
         final UserDto userDto = mapper.map(requestModel, UserDto.class);
         final UserDto updatedUser = userService.updateUser(id, userDto);
-        return  mapper.map(updatedUser, UserDetailsResponseModel.class);
+        return mapper.map(updatedUser, UserDetailsResponseModel.class);
     }
 
     @DeleteMapping(
@@ -102,26 +106,61 @@ public class UserController {
     @GetMapping(
             path = "/{id}/addresses",
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    public Collection<AddressesResponseModel> getUserAddresses(@PathVariable @NonNull final String id) {
+    public CollectionModel<AddressesResponseModel> getUserAddresses(@PathVariable @NonNull final String id) {
         final Type addressesCollection = new TypeToken<Collection<AddressesResponseModel>>() {}.getType();
         Collection<AddressesResponseModel> responseModels = new ArrayList<>();
+        Collection<Link> collectionLinks = List.of(
+                WebMvcLinkBuilder.linkTo(UserController.class)
+                        .slash(id).withRel("user"),
+
+                WebMvcLinkBuilder.linkTo(
+                                WebMvcLinkBuilder.methodOn(UserController.class).getUserAddresses(id))
+                        .withSelfRel()
+        );
 
         Collection<AddressDto> addressDtos = addressService.getAddresses(id);
         if (addressDtos != null) {
             responseModels = mapper.map(addressDtos, addressesCollection);
+
+            Collection<Link> addressLinks = List.of(
+                    WebMvcLinkBuilder.linkTo(UserController.class)
+                            .slash(id).withRel("user"),
+                    WebMvcLinkBuilder.linkTo(
+                                    WebMvcLinkBuilder.methodOn(UserController.class).getUserAddresses(id))
+                            .withSelfRel()
+            );
+
+            responseModels.forEach(addressesResponseModel -> addressesResponseModel.add(addressLinks));
         }
 
-        return responseModels;
+        return CollectionModel.of(responseModels, collectionLinks);
     }
 
     @GetMapping(
             path = "/{userId}/addresses/{addressId}",
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    public AddressesResponseModel getUserAddress(
+    public EntityModel<AddressesResponseModel> getUserAddress(
+            @PathVariable @NonNull final String userId,
             @PathVariable @NonNull final String addressId) {
-        return mapper.map(
+
+        Collection<Link> links = List.of(
+                WebMvcLinkBuilder.linkTo(UserController.class)
+                        .slash(userId).withRel("user"),
+
+                WebMvcLinkBuilder.linkTo(
+                        WebMvcLinkBuilder.methodOn(UserController.class).getUserAddresses(userId))
+                        .withRel("addresses"),
+
+                WebMvcLinkBuilder.linkTo(
+                        WebMvcLinkBuilder.methodOn(UserController.class).getUserAddress(userId, addressId))
+                        .withSelfRel()
+        );
+
+        AddressesResponseModel responseModel = mapper.map(
                 addressService.getUserAddress(addressId),
                 AddressesResponseModel.class);
+
+        return EntityModel.of(responseModel, links);
     }
 
 }
