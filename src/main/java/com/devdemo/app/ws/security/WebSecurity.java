@@ -32,14 +32,18 @@ public class WebSecurity {
         AuthenticationManagerBuilder authenticationManagerBuilder
                 = http.getSharedObject(AuthenticationManagerBuilder.class);
         authenticationManagerBuilder.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
-        AuthenticationManager authenticationManager = authenticationManagerBuilder.build();
+        final AuthenticationManager authenticationManager = authenticationManagerBuilder.build();
         AuthenticationFilter filter = new AuthenticationFilter(authenticationManager);
-        filter.setFilterProcessesUrl("/users/login");
+        filter.setFilterProcessesUrl(SecurityConstants.LOGIN_URL);
 
         http.csrf(AbstractHttpConfigurer::disable).authorizeHttpRequests(
-                        (authz) -> authz.requestMatchers(HttpMethod.POST, SecurityConstants.SIGN_UP_URL)
+                        (authz) -> authz
+                                .requestMatchers(HttpMethod.POST, SecurityConstants.SIGN_UP_URL)
                                 .permitAll()
-                                .anyRequest().authenticated())
+                                .requestMatchers(HttpMethod.GET, SecurityConstants.VERIFICATION_EMAIL_URL)
+                                .permitAll()
+                                .anyRequest()
+                                .authenticated())
                 .authenticationManager(authenticationManager)
                 .addFilter(filter)
                 .addFilter(new AuthorizationFilter(authenticationManager))
