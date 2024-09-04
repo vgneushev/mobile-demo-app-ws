@@ -15,4 +15,5 @@ public interface UserService extends UserDetailsService {
 
     UserDto getUserById(@NonNull final String id);
     void deleteUser(@NonNull final String id);
+    boolean verifyEmailToken(@NonNull final String token);
 }

@@ -8,7 +8,7 @@ import com.devdemo.app.ws.shared.util.Constant;
 import com.devdemo.app.ws.repository.UserRepository;
 import com.devdemo.app.ws.io.entity.UserEntity;
 import com.devdemo.app.ws.shared.util.ErrorMessages;
-import com.devdemo.app.ws.ui.model.response.AddressesResponseModel;
+import com.devdemo.app.ws.shared.util.Util;
 import io.qala.datagen.RandomShortApi;
 import lombok.NonNull;
 import org.modelmapper.ModelMapper;
@@ -124,6 +124,24 @@ public class UserServiceImpl implements UserService {
         }
 
         userRepository.delete(storedUserDetails);
+    }
+
+    @Override
+    public boolean verifyEmailToken(@NonNull final String token) {
+        boolean returnValue = false;
+
+        UserEntity userEntity = userRepository.findUserByEmailVerificationToken(token);
+
+        if (userEntity != null) {
+            if(!Util.hasTokenExpired(token)) {
+                userEntity.setEmailVerificationToken(null);
+                userEntity.setEmailVerified(Boolean.TRUE);
+                userRepository.save(userEntity);
+                returnValue = true;
+            }
+        }
+
+        return returnValue;
     }
 
     @Override
