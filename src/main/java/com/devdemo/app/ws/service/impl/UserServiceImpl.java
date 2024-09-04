@@ -171,7 +171,7 @@ public class UserServiceImpl implements UserService {
         if (username == null) {
             throw new UsernameNotFoundException(username);
         }
-
-        return new User(username, userEntity.getEncryptedPassword(), new ArrayList<>());
+        return new User(username, userEntity.getEncryptedPassword(), userEntity.getEmailVerified(),
+                true, true, true, new ArrayList<>());
     }
 }
