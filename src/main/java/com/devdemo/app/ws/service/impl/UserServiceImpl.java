@@ -1,14 +1,18 @@
 package com.devdemo.app.ws.service.impl;
 
 import com.devdemo.app.ws.exception.UserServiceException;
+import com.devdemo.app.ws.io.entity.AddressEntity;
 import com.devdemo.app.ws.service.UserService;
 import com.devdemo.app.ws.shared.dto.UserDto;
 import com.devdemo.app.ws.shared.util.Constant;
 import com.devdemo.app.ws.repository.UserRepository;
 import com.devdemo.app.ws.io.entity.UserEntity;
 import com.devdemo.app.ws.shared.util.ErrorMessages;
+import com.devdemo.app.ws.ui.model.response.AddressesResponseModel;
 import io.qala.datagen.RandomShortApi;
 import lombok.NonNull;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -21,7 +25,10 @@ import org.springframework.data.domain.Page;
 
 
 import org.springframework.data.domain.Pageable;
+
+import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Component
@@ -33,24 +40,28 @@ public class UserServiceImpl implements UserService {
     @Autowired
     BCryptPasswordEncoder passwordEncoder;
 
+    private final ModelMapper mapper = new ModelMapper();
+
     @Override
     public UserDto createUser(@NonNull final UserDto userDto) {
-        UserDto returnValue = new UserDto();
         UserEntity storedUserDetails = userRepository.findByEmail(userDto.getEmail());
 
-        if(storedUserDetails != null) {
+        if (storedUserDetails != null) {
             throw new UserServiceException(ErrorMessages.RECORD_ALREADY_EXIST.getErrorMessage());
         }
 
-        UserEntity userEntity = new UserEntity();
-        BeanUtils.copyProperties(userDto, userEntity);
+        UserEntity userEntity = mapper.map(userDto, UserEntity.class);
         userEntity.setEncryptedPassword(passwordEncoder.encode(userDto.getPassword()));
         userEntity.setUserId(RandomShortApi.alphanumeric(Constant.USER_ID_LENGTH));
 
-        UserEntity savedUserDetails = userRepository.save(userEntity);
-        BeanUtils.copyProperties(savedUserDetails, returnValue);
+        userEntity.getAddresses().forEach(
+                addressEntity -> {
+                    addressEntity.setAddressId(RandomShortApi.alphanumeric(Constant.ADDRESS_ID_LENGTH));
+                    addressEntity.setUserDetails(userEntity);
+                });
 
-        return returnValue;
+        final UserEntity savedUserDetails = userRepository.save(userEntity);
+        return mapper.map(savedUserDetails, UserDto.class);
     }
 
     @Override
@@ -58,17 +69,21 @@ public class UserServiceImpl implements UserService {
         UserDto returnValue = new UserDto();
         UserEntity storedUserDetails = userRepository.findByUserId(userId);
 
-        if(storedUserDetails == null) {
+        if (storedUserDetails == null) {
             throw new UsernameNotFoundException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
         }
 
+        // TODO if field value is not null
         storedUserDetails.setFirstName(userDto.getFirstName());
         storedUserDetails.setLastName(userDto.getLastName());
 
-        UserEntity updatedUserDetails = userRepository.save(storedUserDetails);
-        BeanUtils.copyProperties(updatedUserDetails, returnValue);
+        if (!userDto.getAddresses().isEmpty()) {
+            // TODO if each field value is not null
+            final Type addressCollection = new TypeToken<Collection<AddressEntity>>() {}.getType();
+            storedUserDetails.setAddresses(mapper.map(userDto.getAddresses(), addressCollection));
+        }
 
-        return returnValue;
+        return mapper.map(userRepository.save(storedUserDetails), UserDto.class);
     }
 
     @Override
@@ -76,7 +91,7 @@ public class UserServiceImpl implements UserService {
         UserDto returnValue = new UserDto();
         UserEntity storedUserDetails = userRepository.findByEmail(email);
 
-        if(storedUserDetails == null) {
+        if (storedUserDetails == null) {
             throw new UsernameNotFoundException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
         }
 
@@ -104,7 +119,7 @@ public class UserServiceImpl implements UserService {
     public void deleteUser(@NonNull final String userId) {
         UserEntity storedUserDetails = userRepository.findByUserId(userId);
 
-        if(storedUserDetails == null) {
+        if (storedUserDetails == null) {
             throw new UsernameNotFoundException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
         }
 
@@ -116,7 +131,7 @@ public class UserServiceImpl implements UserService {
         UserDto returnValue = new UserDto();
         UserEntity storedUserDetails = userRepository.findByUserId(id);
 
-        if(storedUserDetails == null) {
+        if (storedUserDetails == null) {
             throw new RuntimeException("User not found");
         }
 
@@ -126,7 +141,6 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     *
      * @param username in this case email
      * @return User data
      * @throws UsernameNotFoundException
@@ -134,7 +148,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDetails loadUserByUsername(@NonNull final String username) throws UsernameNotFoundException {
         UserEntity userEntity = userRepository.findByEmail(username);
-        if (username==null) {
+        if (username == null) {
             throw new UsernameNotFoundException(username);
         }
 

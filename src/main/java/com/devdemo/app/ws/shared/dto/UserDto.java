@@ -3,6 +3,7 @@ package com.devdemo.app.ws.shared.dto;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.Collection;
 
 @Data
 public class UserDto implements Serializable {
@@ -16,4 +17,5 @@ public class UserDto implements Serializable {
     private String encryptedPassword;
     private String emailVerificationToken;
     private Boolean emailVerified = false;
+    private Collection<AddressDto> addresses;
 }

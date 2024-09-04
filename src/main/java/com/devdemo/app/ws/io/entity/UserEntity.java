@@ -7,13 +7,10 @@ import jakarta.persistence.*;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.Collection;
 
-@Getter
-@Setter
+@Data
 @Entity(name = "users")
-@NoArgsConstructor
-@AllArgsConstructor
-@ToString
 public class UserEntity implements Serializable {
 
     @Serial
@@ -43,4 +40,7 @@ public class UserEntity implements Serializable {
 
     @Column(nullable = false)
     private Boolean emailVerified = false;
+
+    @OneToMany(mappedBy = "userDetails", cascade = CascadeType.ALL)
+    private Collection<AddressEntity> addresses;
 }
