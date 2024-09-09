@@ -4,6 +4,7 @@ import com.devdemo.app.ws.exception.UserServiceException;
 import com.devdemo.app.ws.io.entity.AddressEntity;
 import com.devdemo.app.ws.service.UserService;
 import com.devdemo.app.ws.shared.dto.UserDto;
+import com.devdemo.app.ws.shared.util.AmazonSES;
 import com.devdemo.app.ws.shared.util.Constant;
 import com.devdemo.app.ws.repository.UserRepository;
 import com.devdemo.app.ws.io.entity.UserEntity;
@@ -63,7 +64,12 @@ public class UserServiceImpl implements UserService {
                 });
 
         final UserEntity savedUserDetails = userRepository.save(userEntity);
-        return mapper.map(savedUserDetails, UserDto.class);
+        final UserDto returnValue = mapper.map(savedUserDetails, UserDto.class);
+
+        //Send email
+        //new AmazonSES().verifyEmail(returnValue);
+
+        return returnValue;
     }
 
     @Override
