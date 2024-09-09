@@ -49,6 +49,8 @@ public class WebSecurity {
                                 .permitAll()
                                 .requestMatchers(HttpMethod.GET, SecurityConstants.VERIFICATION_EMAIL_URL)
                                 .permitAll()
+                                .requestMatchers(HttpMethod.POST, SecurityConstants.RESET_PASSWORD_URL)
+                                .permitAll()
                                 .anyRequest()
                                 .authenticated())
                 .authenticationManager(authenticationManager)
