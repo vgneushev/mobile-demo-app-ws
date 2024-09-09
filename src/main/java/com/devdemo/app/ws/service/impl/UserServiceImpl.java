@@ -4,11 +4,12 @@ import com.devdemo.app.ws.exception.UserServiceException;
 import com.devdemo.app.ws.io.entity.AddressEntity;
 import com.devdemo.app.ws.service.UserService;
 import com.devdemo.app.ws.shared.dto.UserDto;
+import com.devdemo.app.ws.shared.util.AmazonSES;
 import com.devdemo.app.ws.shared.util.Constant;
 import com.devdemo.app.ws.repository.UserRepository;
 import com.devdemo.app.ws.io.entity.UserEntity;
 import com.devdemo.app.ws.shared.util.ErrorMessages;
-import com.devdemo.app.ws.ui.model.response.AddressesResponseModel;
+import com.devdemo.app.ws.shared.util.Util;
 import io.qala.datagen.RandomShortApi;
 import lombok.NonNull;
 import org.modelmapper.ModelMapper;
@@ -53,6 +54,8 @@ public class UserServiceImpl implements UserService {
         UserEntity userEntity = mapper.map(userDto, UserEntity.class);
         userEntity.setEncryptedPassword(passwordEncoder.encode(userDto.getPassword()));
         userEntity.setUserId(RandomShortApi.alphanumeric(Constant.USER_ID_LENGTH));
+        userEntity.setEmailVerificationToken(Util.generateTokenForUserId(userEntity.getUserId()));
+        userEntity.setEmailVerified(Boolean.FALSE);
 
         userEntity.getAddresses().forEach(
                 addressEntity -> {
@@ -61,7 +64,12 @@ public class UserServiceImpl implements UserService {
                 });
 
         final UserEntity savedUserDetails = userRepository.save(userEntity);
-        return mapper.map(savedUserDetails, UserDto.class);
+        final UserDto returnValue = mapper.map(savedUserDetails, UserDto.class);
+
+        //Send email
+        //new AmazonSES().verifyEmail(returnValue);
+
+        return returnValue;
     }
 
     @Override
@@ -127,6 +135,24 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public boolean verifyEmailToken(@NonNull final String token) {
+        boolean returnValue = false;
+
+        UserEntity userEntity = userRepository.findUserByEmailVerificationToken(token);
+
+        if (userEntity != null) {
+            if(!Util.hasTokenExpired(token)) {
+                userEntity.setEmailVerificationToken(null);
+                userEntity.setEmailVerified(Boolean.TRUE);
+                userRepository.save(userEntity);
+                returnValue = true;
+            }
+        }
+
+        return returnValue;
+    }
+
+    @Override
     public UserDto getUserById(@NonNull final String id) {
         UserDto returnValue = new UserDto();
         UserEntity storedUserDetails = userRepository.findByUserId(id);
@@ -147,11 +173,11 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public UserDetails loadUserByUsername(@NonNull final String username) throws UsernameNotFoundException {
-        UserEntity userEntity = userRepository.findByEmail(username);
-        if (username == null) {
+        final UserEntity userEntity = userRepository.findByEmail(username);
+        if (userEntity == null) {
             throw new UsernameNotFoundException(username);
         }
-
-        return new User(username, userEntity.getEncryptedPassword(), new ArrayList<>());
+        return new User(username, userEntity.getEncryptedPassword(), userEntity.getEmailVerified(),
+                true, true, true, new ArrayList<>());
     }
 }
