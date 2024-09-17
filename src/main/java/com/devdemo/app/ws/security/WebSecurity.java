@@ -49,6 +49,8 @@ public class WebSecurity {
                                 .permitAll()
                                 .requestMatchers(HttpMethod.GET, SecurityConstants.VERIFICATION_EMAIL_URL)
                                 .permitAll()
+                                .requestMatchers(HttpMethod.POST, SecurityConstants.RESET_PASSWORD_REQUEST_URL)
+                                .permitAll()
                                 .requestMatchers(HttpMethod.POST, SecurityConstants.RESET_PASSWORD_URL)
                                 .permitAll()
                                 .anyRequest()
@@ -64,11 +66,14 @@ public class WebSecurity {
 
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("*"));
-        configuration.setAllowedMethods(Arrays.asList("GET","POST"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        // *** URL below needs to match the Vue client URL and port ***
+        config.setAllowedOrigins(Arrays.asList("http://localhost:8081", "http://localhost:8080", "http://localhost:8080/users/password-reset","ORIGIN", "Origin"));
+        config.setAllowedMethods(Arrays.asList("POST", "GET"));
+        config.setAllowedHeaders(Arrays.asList("token", "password", "Accept","Access-Control-Allow-Origin"));
+        source.registerCorsConfiguration("/**", config);
         return source;
     }
 }

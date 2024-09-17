@@ -5,6 +5,7 @@ import com.devdemo.app.ws.service.AddressService;
 import com.devdemo.app.ws.service.UserService;
 import com.devdemo.app.ws.shared.dto.AddressDto;
 import com.devdemo.app.ws.shared.dto.UserDto;
+import com.devdemo.app.ws.ui.model.request.PasswordResetModel;
 import com.devdemo.app.ws.ui.model.request.PasswordResetRequestModel;
 import com.devdemo.app.ws.ui.model.request.UserDetailsRequestModel;
 import com.devdemo.app.ws.shared.util.ErrorMessages;
@@ -31,6 +32,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@CrossOrigin
 @RestController
 @Slf4j
 @RequestMapping("users")
@@ -186,5 +188,18 @@ public class UserController {
 
         return new OperationStatusModel(
                 operationResult.name(), RequestOperationName.REQUEST_PASSWORD_RESET.name());
+    }
+
+    @PostMapping(
+            path = "/password-reset",
+            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
+            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public OperationStatusModel resetPassword(@RequestBody @NonNull final PasswordResetModel passwordResetModel) {
+
+        final RequestOperationStatus operationResult =
+                userService.resetPassword(passwordResetModel.getToken(), passwordResetModel.getPassword());
+
+        return new OperationStatusModel(
+                operationResult.name(), RequestOperationName.RESET_PASSWORD.name());
     }
 }

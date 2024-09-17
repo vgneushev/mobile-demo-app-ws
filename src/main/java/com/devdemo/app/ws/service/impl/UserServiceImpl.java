@@ -176,6 +176,33 @@ public class UserServiceImpl implements UserService {
         return returnValue;
     }
 
+    @Override
+    public RequestOperationStatus resetPassword(@NonNull String token, @NonNull String password) {
+        if (Util.hasTokenExpired(token)) {
+            return RequestOperationStatus.ERROR;
+        }
+
+        final PasswordResetTokenEntity passwordResetTokenEntity = passwordResetTokenRepository.findByToken(token);
+
+        if (passwordResetTokenEntity == null) {
+            return RequestOperationStatus.ERROR;
+        }
+
+        final String encodedPassword = passwordEncoder.encode(password);
+
+        UserEntity userEntity = passwordResetTokenEntity.getUserDetails();
+        userEntity.setEncryptedPassword(encodedPassword);
+        final UserEntity savedUserEntity = userRepository.save(userEntity);
+
+        if (savedUserEntity == null || !savedUserEntity.getEncryptedPassword().equalsIgnoreCase(encodedPassword)){
+            return RequestOperationStatus.ERROR;
+        }
+
+        passwordResetTokenRepository.delete(passwordResetTokenEntity);
+
+        return RequestOperationStatus.SUCCESS;
+    }
+
 
     @Override
     public UserDto getUserById(@NonNull final String id) {

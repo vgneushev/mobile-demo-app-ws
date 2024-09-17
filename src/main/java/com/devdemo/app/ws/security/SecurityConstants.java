@@ -12,7 +12,9 @@ public class SecurityConstants {
     public static final String SIGN_UP_URL = "/users";
     public static final String LOGIN_URL = "/users/login";
     public static final String VERIFICATION_EMAIL_URL = "/users/email-verification";
-    public static final String RESET_PASSWORD_URL = "/users/password-reset-request";
+    public static final String RESET_PASSWORD_REQUEST_URL = "/users/password-reset-request";
+    public static final String RESET_PASSWORD_URL = "/users/password-reset";
+
 
 
     public static String getTokenSecret() {

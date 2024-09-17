@@ -20,4 +20,5 @@ public interface UserService extends UserDetailsService {
     RequestOperationStatus verifyEmailToken(@NonNull final String token);
 
     RequestOperationStatus requestPasswordReset(@NonNull final String email);
+    RequestOperationStatus resetPassword(@NonNull final String token, @NonNull final String password);
 }
