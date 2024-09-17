@@ -2,6 +2,8 @@ package com.devdemo.app.ws.service.impl;
 
 import com.devdemo.app.ws.exception.UserServiceException;
 import com.devdemo.app.ws.io.entity.AddressEntity;
+import com.devdemo.app.ws.io.entity.PasswordResetTokenEntity;
+import com.devdemo.app.ws.repository.PasswordResetTokenRepository;
 import com.devdemo.app.ws.service.UserService;
 import com.devdemo.app.ws.shared.dto.UserDto;
 import com.devdemo.app.ws.shared.util.AmazonSES;
@@ -10,6 +12,7 @@ import com.devdemo.app.ws.repository.UserRepository;
 import com.devdemo.app.ws.io.entity.UserEntity;
 import com.devdemo.app.ws.shared.util.ErrorMessages;
 import com.devdemo.app.ws.shared.util.Util;
+import com.devdemo.app.ws.ui.model.response.operation.RequestOperationStatus;
 import io.qala.datagen.RandomShortApi;
 import lombok.NonNull;
 import org.modelmapper.ModelMapper;
@@ -37,6 +40,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    PasswordResetTokenRepository passwordResetTokenRepository;
 
     @Autowired
     BCryptPasswordEncoder passwordEncoder;
@@ -135,9 +141,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean verifyEmailToken(@NonNull final String token) {
-        boolean returnValue = false;
-
+    public RequestOperationStatus verifyEmailToken(@NonNull final String token) {
+        RequestOperationStatus returnValue = RequestOperationStatus.ERROR;
         UserEntity userEntity = userRepository.findUserByEmailVerificationToken(token);
 
         if (userEntity != null) {
@@ -145,12 +150,59 @@ public class UserServiceImpl implements UserService {
                 userEntity.setEmailVerificationToken(null);
                 userEntity.setEmailVerified(Boolean.TRUE);
                 userRepository.save(userEntity);
-                returnValue = true;
+                returnValue = RequestOperationStatus.SUCCESS;
             }
         }
 
         return returnValue;
     }
+
+    @Override
+    public RequestOperationStatus requestPasswordReset(@NonNull final String email) {
+        RequestOperationStatus returnValue = RequestOperationStatus.ERROR;
+        final UserEntity userEntity = userRepository.findByEmail(email);
+        if (userEntity == null) {
+            return returnValue;
+        }
+
+        final String token = Util.generatePasswordResetToken(userEntity.getUserId());
+        PasswordResetTokenEntity passwordResetTokenEntity = new PasswordResetTokenEntity();
+        passwordResetTokenEntity.setToken(token);
+        passwordResetTokenEntity.setUserDetails(userEntity);
+        passwordResetTokenRepository.save(passwordResetTokenEntity);
+
+        //returnValue = new AmazonSES().sendPasswordResetRequest(userEntity.getFirstName(), userEntity.getEmail(), token);
+        returnValue = RequestOperationStatus.SUCCESS;
+        return returnValue;
+    }
+
+    @Override
+    public RequestOperationStatus resetPassword(@NonNull String token, @NonNull String password) {
+        if (Util.hasTokenExpired(token)) {
+            return RequestOperationStatus.ERROR;
+        }
+
+        final PasswordResetTokenEntity passwordResetTokenEntity = passwordResetTokenRepository.findByToken(token);
+
+        if (passwordResetTokenEntity == null) {
+            return RequestOperationStatus.ERROR;
+        }
+
+        final String encodedPassword = passwordEncoder.encode(password);
+
+        UserEntity userEntity = passwordResetTokenEntity.getUserDetails();
+        userEntity.setEncryptedPassword(encodedPassword);
+        final UserEntity savedUserEntity = userRepository.save(userEntity);
+
+        if (savedUserEntity == null || !savedUserEntity.getEncryptedPassword().equalsIgnoreCase(encodedPassword)){
+            return RequestOperationStatus.ERROR;
+        }
+
+        passwordResetTokenRepository.delete(passwordResetTokenEntity);
+
+        return RequestOperationStatus.SUCCESS;
+    }
+
 
     @Override
     public UserDto getUserById(@NonNull final String id) {
@@ -167,17 +219,17 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * @param username in this case email
+     * @param email in this case email
      * @return User data
      * @throws UsernameNotFoundException
      */
     @Override
-    public UserDetails loadUserByUsername(@NonNull final String username) throws UsernameNotFoundException {
-        final UserEntity userEntity = userRepository.findByEmail(username);
+    public UserDetails loadUserByUsername(@NonNull final String email) throws UsernameNotFoundException {
+        final UserEntity userEntity = userRepository.findByEmail(email);
         if (userEntity == null) {
-            throw new UsernameNotFoundException(username);
+            throw new UsernameNotFoundException(email);
         }
-        return new User(username, userEntity.getEncryptedPassword(), userEntity.getEmailVerified(),
+        return new User(email, userEntity.getEncryptedPassword(), userEntity.getEmailVerified(),
                 true, true, true, new ArrayList<>());
     }
 }

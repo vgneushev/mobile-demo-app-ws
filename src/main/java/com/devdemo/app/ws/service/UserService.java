@@ -1,6 +1,8 @@
 package com.devdemo.app.ws.service;
 
 import com.devdemo.app.ws.shared.dto.UserDto;
+import com.devdemo.app.ws.ui.model.response.operation.OperationStatusModel;
+import com.devdemo.app.ws.ui.model.response.operation.RequestOperationStatus;
 import lombok.NonNull;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
@@ -15,5 +17,8 @@ public interface UserService extends UserDetailsService {
 
     UserDto getUserById(@NonNull final String id);
     void deleteUser(@NonNull final String id);
-    boolean verifyEmailToken(@NonNull final String token);
+    RequestOperationStatus verifyEmailToken(@NonNull final String token);
+
+    RequestOperationStatus requestPasswordReset(@NonNull final String email);
+    RequestOperationStatus resetPassword(@NonNull final String token, @NonNull final String password);
 }

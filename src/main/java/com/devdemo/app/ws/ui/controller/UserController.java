@@ -5,6 +5,8 @@ import com.devdemo.app.ws.service.AddressService;
 import com.devdemo.app.ws.service.UserService;
 import com.devdemo.app.ws.shared.dto.AddressDto;
 import com.devdemo.app.ws.shared.dto.UserDto;
+import com.devdemo.app.ws.ui.model.request.PasswordResetModel;
+import com.devdemo.app.ws.ui.model.request.PasswordResetRequestModel;
 import com.devdemo.app.ws.ui.model.request.UserDetailsRequestModel;
 import com.devdemo.app.ws.shared.util.ErrorMessages;
 import com.devdemo.app.ws.ui.model.response.AddressesResponseModel;
@@ -30,6 +32,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@CrossOrigin
 @RestController
 @Slf4j
 @RequestMapping("users")
@@ -168,13 +171,35 @@ public class UserController {
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public OperationStatusModel verifyEmailToken(@RequestParam(value = "token") @NonNull final String token) {
 
-        final boolean isVerified = userService.verifyEmailToken(token);
-        final RequestOperationStatus operationStatus = isVerified
-                ? RequestOperationStatus.SUCCESS
-                : RequestOperationStatus.ERROR;
+        final RequestOperationStatus isVerified = userService.verifyEmailToken(token);
 
         return new OperationStatusModel(
-                operationStatus.name(), RequestOperationName.VERIFY_EMAIL.name());
+                isVerified.name(), RequestOperationName.VERIFY_EMAIL.name());
     }
 
+    @PostMapping(
+            path = "/password-reset-request",
+            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
+            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public OperationStatusModel requestReset(@RequestBody @NonNull final PasswordResetRequestModel passwordResetRequestModel) {
+
+        final RequestOperationStatus operationResult =
+                userService.requestPasswordReset(passwordResetRequestModel.getEmail());
+
+        return new OperationStatusModel(
+                operationResult.name(), RequestOperationName.REQUEST_PASSWORD_RESET.name());
+    }
+
+    @PostMapping(
+            path = "/password-reset",
+            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
+            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public OperationStatusModel resetPassword(@RequestBody @NonNull final PasswordResetModel passwordResetModel) {
+
+        final RequestOperationStatus operationResult =
+                userService.resetPassword(passwordResetModel.getToken(), passwordResetModel.getPassword());
+
+        return new OperationStatusModel(
+                operationResult.name(), RequestOperationName.RESET_PASSWORD.name());
+    }
 }
