@@ -17,7 +17,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -65,14 +65,11 @@ public class WebSecurity {
     }
 
     @Bean
-    CorsConfigurationSource corsConfigurationSource() {
+    public CorsConfigurationSource corsConfigurationSource() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(true);
-        // *** URL below needs to match the Vue client URL and port ***
-        config.setAllowedOrigins(Arrays.asList("http://localhost:8081", "http://localhost:8080", "http://localhost:8080/users/password-reset","ORIGIN", "Origin"));
-        config.setAllowedMethods(Arrays.asList("POST", "GET"));
-        config.setAllowedHeaders(Arrays.asList("token", "password", "Accept","Access-Control-Allow-Origin"));
+        config.setAllowedOrigins(List.of("http://localhost:8081"));
+        config.setAllowedMethods(List.of("POST", "GET"));
         source.registerCorsConfiguration("/**", config);
         return source;
     }
