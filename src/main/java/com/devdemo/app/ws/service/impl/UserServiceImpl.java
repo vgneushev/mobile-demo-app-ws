@@ -47,6 +47,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     BCryptPasswordEncoder passwordEncoder;
 
+    @Autowired
+    Util util;
+
     private final ModelMapper mapper = new ModelMapper();
 
     @Override
@@ -60,7 +63,7 @@ public class UserServiceImpl implements UserService {
         UserEntity userEntity = mapper.map(userDto, UserEntity.class);
         userEntity.setEncryptedPassword(passwordEncoder.encode(userDto.getPassword()));
         userEntity.setUserId(RandomShortApi.alphanumeric(Constant.USER_ID_LENGTH));
-        userEntity.setEmailVerificationToken(Util.generateTokenForUserId(userEntity.getUserId()));
+        userEntity.setEmailVerificationToken(util.generateTokenForUserId(userEntity.getUserId()));
         userEntity.setEmailVerified(Boolean.FALSE);
 
         userEntity.getAddresses().forEach(

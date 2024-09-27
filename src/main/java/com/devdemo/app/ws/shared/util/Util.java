@@ -20,7 +20,7 @@ public class Util {
         return tokenExpirationDate.before(today);
     }
 
-    public static String generateTokenForUserId(@NonNull final String userId) {
+    public String generateTokenForUserId(@NonNull final String userId) {
         return Jwts.builder()
                 .setSubject(userId)
                 .setExpiration(new Date(System.currentTimeMillis() + SecurityConstants.EXPIRATION_TIME))
