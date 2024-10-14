@@ -5,9 +5,11 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.NonNull;
+import org.springframework.stereotype.Service;
 
 import java.util.Date;
 
+@Service
 public class Util {
     public static boolean hasTokenExpired(@NonNull final String token) {
         final Claims claims = Jwts.parser()

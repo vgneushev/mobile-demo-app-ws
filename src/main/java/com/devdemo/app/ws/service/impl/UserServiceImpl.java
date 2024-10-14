@@ -48,6 +48,9 @@ public class UserServiceImpl implements UserService {
     BCryptPasswordEncoder passwordEncoder;
 
     @Autowired
+    AmazonSES amazonSES;
+
+    @Autowired
     Util util;
 
     private final ModelMapper mapper = new ModelMapper();
@@ -76,7 +79,7 @@ public class UserServiceImpl implements UserService {
         final UserDto returnValue = mapper.map(savedUserDetails, UserDto.class);
 
         //Send email
-        //new AmazonSES().verifyEmail(returnValue);
+        //amazonSES.verifyEmail(returnValue);
 
         return returnValue;
     }

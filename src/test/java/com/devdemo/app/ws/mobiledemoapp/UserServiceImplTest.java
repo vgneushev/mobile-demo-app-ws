@@ -1,5 +1,7 @@
 package com.devdemo.app.ws.mobiledemoapp;
 
+import com.devdemo.app.ws.exception.UserServiceException;
+import com.devdemo.app.ws.io.entity.AddressEntity;
 import com.devdemo.app.ws.io.entity.UserEntity;
 import com.devdemo.app.ws.repository.PasswordResetTokenRepository;
 import com.devdemo.app.ws.repository.UserRepository;
@@ -25,7 +27,7 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class UserServiceImplTest {
 
@@ -58,6 +60,28 @@ public class UserServiceImplTest {
         entity.setEmailVerified(Boolean.TRUE);
         entity.setEmail("test@test.com");
 
+        List<AddressEntity> address = new ArrayList<>();
+        AddressEntity shippingAddressEntity = new AddressEntity();
+        shippingAddressEntity.setType("shipping");
+        shippingAddressEntity.setUserDetails(entity);
+        shippingAddressEntity.setAddressId("123");
+        shippingAddressEntity.setCity("Vlg");
+        shippingAddressEntity.setCountry("Ru");
+        shippingAddressEntity.setStreetName("Street 123");
+        shippingAddressEntity.setPostalCode("PostCode 123");
+        address.add(shippingAddressEntity);
+
+        AddressEntity billingAddressEntity = new AddressEntity();
+        billingAddressEntity.setType("billing");
+        billingAddressEntity.setUserDetails(entity);
+        billingAddressEntity.setAddressId("123");
+        billingAddressEntity.setCity("Vlg");
+        billingAddressEntity.setCountry("Ru");
+        billingAddressEntity.setStreetName("Street 123");
+        billingAddressEntity.setPostalCode("PostCode 123");
+        address.add(billingAddressEntity);
+
+        entity.setAddresses(address);
 
         return Stream.of(Arguments.of(entity));
     }
@@ -78,21 +102,48 @@ public class UserServiceImplTest {
 
     @ParameterizedTest
     @MethodSource("getValidUserSource")
-    final void testCreateUser(final UserEntity entity) {
+    final void testUserAlreadyExist(final UserEntity expectedUserData) {
+        when(userRepository.findByEmail(anyString())).thenReturn(expectedUserData);
+        assertThrows(UserServiceException.class,
+                ()-> userService.createUser(new UserDto().setEmail(expectedUserData.getEmail())));
+    }
+
+    @ParameterizedTest
+    @MethodSource("getValidUserSource")
+    final void testCreateUser(final UserEntity expectedUserData) {
         when(userRepository.findByEmail(anyString())).thenReturn(null);
-        when(bCryptPasswordEncoder.encode(anyString())).thenReturn(entity.getEncryptedPassword());
-        when(userRepository.save(any(UserEntity.class))).thenReturn(entity);
-        when(util.generateTokenForUserId(anyString())).thenReturn(entity.getEmailVerificationToken());
+        when(bCryptPasswordEncoder.encode(anyString())).thenReturn(expectedUserData.getEncryptedPassword());
+        when(userRepository.save(any(UserEntity.class))).thenReturn(expectedUserData);
+        when(util.generateTokenForUserId(anyString())).thenReturn(expectedUserData.getEmailVerificationToken());
 
         List<AddressDto> addressDtos = new ArrayList<>();
-        AddressDto addressDto = new AddressDto();
-        addressDto.setType("shipping");
-        addressDtos.add(addressDto);
+        AddressDto shippingAddressDto = new AddressDto();
+        shippingAddressDto.setType("shipping");
+        shippingAddressDto.setAddressId("123");
+        shippingAddressDto.setCity("Vlg");
+        shippingAddressDto.setCountry("Ru");
+        shippingAddressDto.setStreetName("Street 123");
+        shippingAddressDto.setPostalCode("PostCode 123");
+        addressDtos.add(shippingAddressDto);
 
-        UserDto userDto = new UserDto();
-        userDto.setAddresses(addressDtos);
+        AddressDto billingAddressDto = new AddressDto();
+        billingAddressDto.setType("billing");
+        billingAddressDto.setAddressId("123");
+        billingAddressDto.setCity("Vlg");
+        billingAddressDto.setCountry("Ru");
+        billingAddressDto.setStreetName("Street 123");
+        billingAddressDto.setPostalCode("PostCode 123");
+        addressDtos.add(billingAddressDto);
 
-        UserDto storedUserDetails = userService.createUser(userDto);
+        UserDto actualUserData = new UserDto();
+        actualUserData.setAddresses(addressDtos);
+
+        UserDto storedUserDetails = userService.createUser(actualUserData);
         assertNotNull(storedUserDetails);
+        assertEquals(expectedUserData.getFirstName(), storedUserDetails.getFirstName());
+        assertEquals(expectedUserData.getLastName(), storedUserDetails.getLastName());
+        assertNotNull(storedUserDetails.getUserId());
+        assertEquals(expectedUserData.getAddresses().size(), storedUserDetails.getAddresses().size());
+        verify(userRepository, times(1)).save(any(UserEntity.class));
     }
 }
