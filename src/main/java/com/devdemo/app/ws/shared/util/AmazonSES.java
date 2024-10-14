@@ -8,10 +8,12 @@ import com.devdemo.app.ws.shared.dto.UserDto;
 import com.devdemo.app.ws.ui.model.response.operation.RequestOperationStatus;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 import static com.devdemo.app.ws.shared.util.Constant.UTF_8;
 
 @Slf4j
+@Service
 public class AmazonSES {
     private final String from = "test@test.com";
 
@@ -21,6 +23,7 @@ public class AmazonSES {
 
     public void verifyEmail(final UserDto userDto) {
         //TODO: update localhost with public address
+        //TODO: move text to property or another file
         final String htmlBody = "<div>Please verify your email address via the link: <div/> <br/>"
                 + "<a href='http:/localhost:8080/verification-service/email-verification.html?token=$tokenValue'>Verify email</a>";
         final String textBody = "Please verify your email address via the link: "
