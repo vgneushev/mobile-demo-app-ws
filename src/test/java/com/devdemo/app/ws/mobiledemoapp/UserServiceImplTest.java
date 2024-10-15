@@ -114,7 +114,7 @@ public class UserServiceImplTest {
         when(userRepository.findByEmail(anyString())).thenReturn(null);
         when(bCryptPasswordEncoder.encode(anyString())).thenReturn(expectedUserData.getEncryptedPassword());
         when(userRepository.save(any(UserEntity.class))).thenReturn(expectedUserData);
-        when(util.generateTokenForUserId(anyString())).thenReturn(expectedUserData.getEmailVerificationToken());
+        when(Util.generateTokenForUserId(anyString())).thenReturn(expectedUserData.getEmailVerificationToken());
 
         List<AddressDto> addressDtos = new ArrayList<>();
         AddressDto shippingAddressDto = new AddressDto();
