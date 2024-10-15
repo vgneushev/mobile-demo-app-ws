@@ -65,8 +65,8 @@ public class UserServiceImpl implements UserService {
 
         UserEntity userEntity = mapper.map(userDto, UserEntity.class);
         userEntity.setEncryptedPassword(passwordEncoder.encode(userDto.getPassword()));
-        userEntity.setUserId(RandomShortApi.alphanumeric(Constant.USER_ID_LENGTH));
-        userEntity.setEmailVerificationToken(util.generateTokenForUserId(userEntity.getUserId()));
+        userEntity.setUserId(Util.generateUserId());
+        userEntity.setEmailVerificationToken(Util.generateTokenForUserId(userEntity.getUserId()));
         userEntity.setEmailVerified(Boolean.FALSE);
 
         userEntity.getAddresses().forEach(
