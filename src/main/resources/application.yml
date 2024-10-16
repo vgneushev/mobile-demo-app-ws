@@ -1,0 +1,14 @@
+spring:
+  profiles:
+    active: local # local / dev
+  application:
+    name: mobile-demo-app-ws
+  jpa:
+    hibernate:
+      ddl-auto: update
+server:
+  servlet:
+    context-path: /mobile-app-ws
+  port: 8888
+
+tokenSecret: bdgDzHgQWURzkXWJCecEcLwDHuSEGFFnMhbxPFeWfebRHntzHZwTXVxbRKdyjVLTXnXmqDeuyvMGMerYcUdTCGhcRuSmiGCrykSJHgQyRDhxKGytZMPLyGqjUiXndvZviCKGQFPyaMyTMvRvWDMXJrdVpXTvMLMAEnCSvGQufZvDiWkznZCumcTJdqBhhzXPzYJZSAETbahJBjwYCSFGjuBDWtKXTVamZHUxMTdXUXcCMtjNTCrfyMXjXuLUizjFuxpUkHnutcqJmCbyZaiMgLqAMYapUBpQMNWpzFjgAmVFGCQMqpMbGWtLQKuQJKeCaMahgCXYUXXKbkHPYnFYFutBXupgPJWaTbyXJvKvikdKjtirjmqDnKuCGyxPPUymfLxnbNGqmhbMabMjaYiMWMMMYgDJhnvPCGFCVrfQFuaHxeZcBzMSpgXgEJrDYCdBtPLxuAqXXHRVwykacRCjbaVHyZZpWWmhxxweTgquejHShZADrAJyCNmKcecSLRqJ

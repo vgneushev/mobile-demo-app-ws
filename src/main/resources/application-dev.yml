@@ -1,0 +1,5 @@
+spring:
+  datasource:
+    username: vlad
+    password: vlad
+    url: jdbc:mysql://localhost:3306/photo_app
