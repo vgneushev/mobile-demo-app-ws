@@ -53,6 +53,8 @@ public class WebSecurity {
                                 .permitAll()
                                 .requestMatchers(HttpMethod.POST, SecurityConstants.RESET_PASSWORD_URL)
                                 .permitAll()
+                                .requestMatchers(SecurityConstants.H2_CONSOLE_URL)
+                                .permitAll()
                                 .anyRequest()
                                 .authenticated())
                 .authenticationManager(authenticationManager)
@@ -60,6 +62,7 @@ public class WebSecurity {
                 .addFilter(new AuthorizationFilter(authenticationManager))
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        http.headers().frameOptions().disable();
 
         return http.build();
     }
