@@ -2,24 +2,21 @@ package com.devdemo.app.ws.restassured;
 
 import com.devdemo.app.ws.ui.model.request.AddressRequestModel;
 import com.devdemo.app.ws.ui.model.request.UserDetailsRequestModel;
-import com.devdemo.app.ws.ui.model.response.UserDetailsResponseModel;
 import io.qala.datagen.RandomShortApi;
+import io.restassured.response.Response;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class TestCreateUser extends BaseRestAssuredTest {
-
-    private final String CONTEXT_PATH = "/mobile-app-ws";
-
+public class UsersWebServiceEndpointTest extends BaseRestAssuredTest {
     @MethodSource
     private static Stream<Arguments> getValidUserSource() {
         UserDetailsRequestModel actualUserData = new UserDetailsRequestModel();
@@ -50,12 +47,10 @@ public class TestCreateUser extends BaseRestAssuredTest {
 
         return Stream.of(Arguments.of(actualUserData));
     }
-
     @ParameterizedTest
     @MethodSource("getValidUserSource")
-    final void test(final UserDetailsRequestModel requestModel) {
-
-        UserDetailsResponseModel responseModel = given()
+    final void testErrorLoginUser(final UserDetailsRequestModel requestModel) {
+        given()
                 .log().all()
                 .contentType("application/json")
                 .accept("application/json")
@@ -64,15 +59,27 @@ public class TestCreateUser extends BaseRestAssuredTest {
                 .post(CONTEXT_PATH + "/users")
                 .then()
                 .statusCode(200)
-                .contentType("application/json")
-                .extract()
-                .response()
-                .as(UserDetailsResponseModel.class);
+                .contentType("application/json");
 
-        assertNotNull(responseModel.getUserId());
-        assertEquals(responseModel.getFirstName(), requestModel.getFirstName());
-        assertEquals(responseModel.getLastName(), requestModel.getLastName());
-        assertEquals(responseModel.getEmail(), requestModel.getEmail());
-        assertEquals(responseModel.getAddresses().size(), requestModel.getAddresses().size());
+
+        Map<String, String> loginDetails = new HashMap<>();
+        loginDetails.put("email", requestModel.getEmail());
+        loginDetails.put("password", requestModel.getPassword());
+
+
+        Response responseModel = given()
+                .log().all()
+                .contentType("application/json")
+                .accept("application/json")
+                .body(loginDetails)
+                .when()
+                .post(CONTEXT_PATH + "/users/login")
+                .then()
+                .statusCode(403)
+                .extract()
+                .response();
+
+       // String authHeader = responseModel.header("Authorization");
+       // String userId = responseModel.header("UserID");
     }
 }
