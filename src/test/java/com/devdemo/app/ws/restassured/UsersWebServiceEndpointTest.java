@@ -4,6 +4,7 @@ import com.devdemo.app.ws.ui.model.request.AddressRequestModel;
 import com.devdemo.app.ws.ui.model.request.UserDetailsRequestModel;
 import io.qala.datagen.RandomShortApi;
 import io.restassured.response.Response;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -66,6 +67,39 @@ public class UsersWebServiceEndpointTest extends BaseRestAssuredTest {
         loginDetails.put("email", requestModel.getEmail());
         loginDetails.put("password", requestModel.getPassword());
 
+        Response responseModel = given()
+                .log().all()
+                .contentType("application/json")
+                .accept("application/json")
+                .body(loginDetails)
+                .when()
+                .post(CONTEXT_PATH + "/users/login")
+                .then()
+                .statusCode(403)
+                .extract()
+                .response();
+    }
+
+    @Disabled
+    @ParameterizedTest
+    @MethodSource("getValidUserSource")
+    final void testLoginUser(final UserDetailsRequestModel requestModel) {
+        given()
+                .log().all()
+                .contentType("application/json")
+                .accept("application/json")
+                .body(requestModel)
+                .when()
+                .post(CONTEXT_PATH + "/users")
+                .then()
+                .statusCode(200)
+                .contentType("application/json");
+
+        //TODO verify email via DB
+
+        Map<String, String> loginDetails = new HashMap<>();
+        loginDetails.put("email", requestModel.getEmail());
+        loginDetails.put("password", requestModel.getPassword());
 
         Response responseModel = given()
                 .log().all()
@@ -79,7 +113,8 @@ public class UsersWebServiceEndpointTest extends BaseRestAssuredTest {
                 .extract()
                 .response();
 
-       // String authHeader = responseModel.header("Authorization");
-       // String userId = responseModel.header("UserID");
+        //TODO Verify nonnull
+         String authHeader = responseModel.header("Authorization");
+         String userId = responseModel.header("UserID");
     }
 }
