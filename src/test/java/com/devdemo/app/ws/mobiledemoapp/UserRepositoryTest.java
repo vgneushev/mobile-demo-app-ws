@@ -96,4 +96,13 @@ public class UserRepositoryTest {
         assertEquals(users.size(), 1);
         assertEquals(users.get(0).getFirstName(), name);
     }
+
+    @Test
+    final void testGetUserByLastName() {
+        final String name = "Vlad2";
+        List<UserEntity> users = repository.findUserByLastName(name);
+        assertNotNull(users);
+        assertEquals(users.size(), 1);
+        assertEquals(users.get(0).getFirstName(), name);
+    }
 }

@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.repository.query.Param;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
@@ -25,4 +26,7 @@ public interface UserRepository extends PagingAndSortingRepository<UserEntity, L
     Page<UserEntity> findAllUsersWithConfirmedEmail(@NonNull final Pageable pageableRequest);
     @Query(value = "select * from Users u where u.first_name = ?1", nativeQuery = true)
     List<UserEntity> findUserByFirstName(@NonNull final String firstName);
+
+    @Query(value = "select * from Users u where u.last_name = :lastName", nativeQuery = true)
+    List<UserEntity> findUserByLastName(@NonNull @Param("lastName") final String lastName);
 }
