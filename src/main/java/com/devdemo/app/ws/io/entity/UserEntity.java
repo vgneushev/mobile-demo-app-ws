@@ -10,6 +10,7 @@ import java.io.Serializable;
 import java.util.Collection;
 
 @Data
+@ToString
 @Entity(name = "users")
 public class UserEntity implements Serializable {
 

@@ -1,13 +1,18 @@
 package com.devdemo.app.ws.restassured;
 
+import com.devdemo.app.ws.io.entity.UserEntity;
+import com.devdemo.app.ws.repository.UserRepository;
 import com.devdemo.app.ws.ui.model.request.AddressRequestModel;
 import com.devdemo.app.ws.ui.model.request.UserDetailsRequestModel;
+import com.devdemo.app.ws.ui.model.response.UserDetailsResponseModel;
 import io.qala.datagen.RandomShortApi;
 import io.restassured.response.Response;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,8 +21,15 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+@SpringBootTest
 public class UsersWebServiceEndpointTest extends BaseRestAssuredTest {
+
+    private final ModelMapper mapper = new ModelMapper();
+    @Autowired
+    UserRepository repository;
     @MethodSource
     private static Stream<Arguments> getValidUserSource() {
         UserDetailsRequestModel actualUserData = new UserDetailsRequestModel();
@@ -67,7 +79,7 @@ public class UsersWebServiceEndpointTest extends BaseRestAssuredTest {
         loginDetails.put("email", requestModel.getEmail());
         loginDetails.put("password", requestModel.getPassword());
 
-        Response responseModel = given()
+        given()
                 .log().all()
                 .contentType("application/json")
                 .accept("application/json")
@@ -75,16 +87,13 @@ public class UsersWebServiceEndpointTest extends BaseRestAssuredTest {
                 .when()
                 .post(CONTEXT_PATH + "/users/login")
                 .then()
-                .statusCode(403)
-                .extract()
-                .response();
+                .statusCode(403);
     }
 
-    @Disabled
     @ParameterizedTest
     @MethodSource("getValidUserSource")
     final void testLoginUser(final UserDetailsRequestModel requestModel) {
-        given()
+        final UserDetailsResponseModel userDetailsResponseModel = given()
                 .log().all()
                 .contentType("application/json")
                 .accept("application/json")
@@ -93,15 +102,20 @@ public class UsersWebServiceEndpointTest extends BaseRestAssuredTest {
                 .post(CONTEXT_PATH + "/users")
                 .then()
                 .statusCode(200)
-                .contentType("application/json");
+                .contentType("application/json")
+                .extract()
+                .response()
+                .as(UserDetailsResponseModel.class);
 
-        //TODO verify email via DB
+        repository.updateUserEmailVerificationStatus(true, userDetailsResponseModel.getUserId());
+        UserEntity user = repository.findByUserId(userDetailsResponseModel.getUserId());
+        assertEquals(user.getEmailVerified(), true);
 
         Map<String, String> loginDetails = new HashMap<>();
         loginDetails.put("email", requestModel.getEmail());
         loginDetails.put("password", requestModel.getPassword());
 
-        Response responseModel = given()
+        Response response = given()
                 .log().all()
                 .contentType("application/json")
                 .accept("application/json")
@@ -109,12 +123,13 @@ public class UsersWebServiceEndpointTest extends BaseRestAssuredTest {
                 .when()
                 .post(CONTEXT_PATH + "/users/login")
                 .then()
-                .statusCode(403)
+                .statusCode(200)
                 .extract()
                 .response();
 
-        //TODO Verify nonnull
-         String authHeader = responseModel.header("Authorization");
-         String userId = responseModel.header("UserID");
+        String authHeader = response.header("Authorization");
+        String userId = response.header("UserID");
+        assertEquals(userId, userDetailsResponseModel.getUserId());
+        assertNotNull(authHeader);
     }
 }
