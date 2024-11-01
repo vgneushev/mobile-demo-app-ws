@@ -128,4 +128,17 @@ public class UserRepositoryTest {
         assertEquals(firstName, name);
         assertEquals(lastName, name);
     }
+
+    @Test
+    final void testUpdateUserStatus() {
+        boolean newStatus = false;
+        repository.updateUserEmailVerificationStatus(newStatus, "12342");
+        UserEntity user = repository.findByUserId("12342");
+        assertEquals(user.getEmailVerified(), newStatus);
+
+        newStatus = true;
+        repository.updateUserEmailVerificationStatus(newStatus, "12342");
+        user = repository.findByUserId("12342");
+        assertEquals(user.getEmailVerified(), newStatus);
+    }
 }
