@@ -105,4 +105,12 @@ public class UserRepositoryTest {
         assertEquals(users.size(), 1);
         assertEquals(users.get(0).getFirstName(), name);
     }
+
+    @Test
+    final void testGetUserByKeyword() {
+        final String name = "2";
+        List<UserEntity> users = repository.findUserByKeyword(name);
+        assertNotNull(users);
+        assertEquals(users.size(), 1);
+    }
 }
