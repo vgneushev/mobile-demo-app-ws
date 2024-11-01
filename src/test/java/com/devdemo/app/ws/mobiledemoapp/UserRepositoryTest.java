@@ -3,8 +3,10 @@ package com.devdemo.app.ws.mobiledemoapp;
 import com.devdemo.app.ws.io.entity.AddressEntity;
 import com.devdemo.app.ws.io.entity.UserEntity;
 import com.devdemo.app.ws.repository.UserRepository;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,17 +16,18 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 public class UserRepositoryTest {
 
     @Autowired
     UserRepository repository;
-    @BeforeEach
+    @BeforeAll
     public void setUp() {
         UserEntity entity = new UserEntity();
         entity.setId(1L);
@@ -83,5 +86,14 @@ public class UserRepositoryTest {
         List<UserEntity> userEntities = page.getContent();
         assertNotNull(userEntities);
         assertEquals(userEntities.size(), 1);
+    }
+
+    @Test
+    final void testGetUserByName() {
+        final String name = "Vlad2";
+        List<UserEntity> users = repository.findUserByFirstName(name);
+        assertNotNull(users);
+        assertEquals(users.size(), 1);
+        assertEquals(users.get(0).getFirstName(), name);
     }
 }
