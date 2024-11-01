@@ -4,11 +4,25 @@ spring:
   application:
     name: mobile-demo-app-ws
   jpa:
+    properties:
+      hibernate:
+        format_sql: true
     hibernate:
       ddl-auto: update
+
 server:
   servlet:
     context-path: /mobile-app-ws
   port: 8888
+
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: DEBUG
+        type:
+          descriptor:
+            sql:
+              BasicBinder: TRACE
 
 tokenSecret: bdgDzHgQWURzkXWJCecEcLwDHuSEGFFnMhbxPFeWfebRHntzHZwTXVxbRKdyjVLTXnXmqDeuyvMGMerYcUdTCGhcRuSmiGCrykSJHgQyRDhxKGytZMPLyGqjUiXndvZviCKGQFPyaMyTMvRvWDMXJrdVpXTvMLMAEnCSvGQufZvDiWkznZCumcTJdqBhhzXPzYJZSAETbahJBjwYCSFGjuBDWtKXTVamZHUxMTdXUXcCMtjNTCrfyMXjXuLUizjFuxpUkHnutcqJmCbyZaiMgLqAMYapUBpQMNWpzFjgAmVFGCQMqpMbGWtLQKuQJKeCaMahgCXYUXXKbkHPYnFYFutBXupgPJWaTbyXJvKvikdKjtirjmqDnKuCGyxPPUymfLxnbNGqmhbMabMjaYiMWMMMYgDJhnvPCGFCVrfQFuaHxeZcBzMSpgXgEJrDYCdBtPLxuAqXXHRVwykacRCjbaVHyZZpWWmhxxweTgquejHShZADrAJyCNmKcecSLRqJ
