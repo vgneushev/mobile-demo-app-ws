@@ -108,9 +108,24 @@ public class UserRepositoryTest {
 
     @Test
     final void testGetUserByKeyword() {
-        final String name = "2";
-        List<UserEntity> users = repository.findUserByKeyword(name);
+        final String keyword = "2";
+        List<UserEntity> users = repository.findUserByKeyword(keyword);
         assertNotNull(users);
         assertEquals(users.size(), 1);
+        assertTrue(users.get(0).getFirstName().contains(keyword));
+        assertTrue(users.get(0).getLastName().contains(keyword));
+    }
+    @Test
+    final void testGetUserFirstLastNamesByKeyword() {
+        final String name = "Vlad2";
+        final String keyword = "2";
+        List<Object[]> users = repository.getUserFirstLastNamesByKeyword(keyword);
+        assertNotNull(users);
+        assertEquals(users.size(), 1);
+        Object[] user = users.get(0);
+        String firstName = String.valueOf(user[0]);
+        String lastName = String.valueOf(user[1]);
+        assertEquals(firstName, name);
+        assertEquals(lastName, name);
     }
 }
