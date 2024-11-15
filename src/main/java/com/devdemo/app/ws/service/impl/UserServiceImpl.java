@@ -152,7 +152,7 @@ public class UserServiceImpl implements UserService {
         UserEntity userEntity = userRepository.findUserByEmailVerificationToken(token);
 
         if (userEntity != null) {
-            if(!Util.hasTokenExpired(token)) {
+            if (!Util.hasTokenExpired(token)) {
                 userEntity.setEmailVerificationToken(null);
                 userEntity.setEmailVerified(Boolean.TRUE);
                 userRepository.save(userEntity);
@@ -200,7 +200,7 @@ public class UserServiceImpl implements UserService {
         userEntity.setEncryptedPassword(encodedPassword);
         final UserEntity savedUserEntity = userRepository.save(userEntity);
 
-        if (savedUserEntity == null || !savedUserEntity.getEncryptedPassword().equalsIgnoreCase(encodedPassword)){
+        if (savedUserEntity == null || !savedUserEntity.getEncryptedPassword().equalsIgnoreCase(encodedPassword)) {
             return RequestOperationStatus.ERROR;
         }
 
@@ -209,19 +209,15 @@ public class UserServiceImpl implements UserService {
         return RequestOperationStatus.SUCCESS;
     }
 
-
     @Override
     public UserDto getUserById(@NonNull final String id) {
-        UserDto returnValue = new UserDto();
-        UserEntity storedUserDetails = userRepository.findByUserId(id);
+        final UserEntity storedUserDetails = userRepository.findByUserId(id);
 
         if (storedUserDetails == null) {
             throw new RuntimeException("User not found");
         }
 
-        BeanUtils.copyProperties(storedUserDetails, returnValue);
-
-        return returnValue;
+        return mapper.map(storedUserDetails, UserDto.class);
     }
 
     /**

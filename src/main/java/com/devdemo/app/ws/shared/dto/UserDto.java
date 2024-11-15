@@ -20,4 +20,19 @@ public class UserDto implements Serializable {
     private String emailVerificationToken;
     private Boolean emailVerified = false;
     private Collection<AddressDto> addresses;
+    @Override
+    public String toString() {
+        return "UserDto{" +
+                "Id=" + Id +
+                ", userId='" + userId + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", password='" + password + '\'' +
+                ", email='" + email + '\'' +
+                ", encryptedPassword='" + encryptedPassword + '\'' +
+                ", emailVerificationToken='" + emailVerificationToken + '\'' +
+                ", emailVerified=" + emailVerified +
+                ", addresses=" + addresses +
+                '}';
+    }
 }

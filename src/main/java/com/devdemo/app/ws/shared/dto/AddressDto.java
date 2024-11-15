@@ -13,4 +13,17 @@ public class AddressDto {
     private String postalCode;
     private String type;
     private UserDto userDetails;
+    @Override
+    public String toString() {
+        return "AddressDto{" +
+                "id=" + id +
+                ", addressId='" + addressId + '\'' +
+                ", city='" + city + '\'' +
+                ", country='" + country + '\'' +
+                ", streetName='" + streetName + '\'' +
+                ", postalCode='" + postalCode + '\'' +
+                ", type='" + type + '\'' +
+                ", userDetails=" + userDetails +
+                '}';
+    }
 }

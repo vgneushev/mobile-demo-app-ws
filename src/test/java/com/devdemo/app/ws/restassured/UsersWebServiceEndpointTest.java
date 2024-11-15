@@ -131,5 +131,24 @@ public class UsersWebServiceEndpointTest extends BaseRestAssuredTest {
         String userId = response.header("UserID");
         assertEquals(userId, userDetailsResponseModel.getUserId());
         assertNotNull(authHeader);
+
+        final UserDetailsResponseModel getUserResponse = given()
+                .log().all()
+                .contentType("application/json")
+                .pathParam("id", userId)
+                .accept("application/json")
+                .header("Authorization", authHeader)
+                .body(loginDetails)
+                .when()
+                .get(CONTEXT_PATH + "/users/{id}")
+                .then()
+                .statusCode(200)
+                .extract()
+                .response()
+                .as(UserDetailsResponseModel.class);
+
+        assertEquals(userId, getUserResponse.getUserId());
+        assertEquals(requestModel.getAddresses().size(), getUserResponse.getAddresses().size());
+
     }
 }
