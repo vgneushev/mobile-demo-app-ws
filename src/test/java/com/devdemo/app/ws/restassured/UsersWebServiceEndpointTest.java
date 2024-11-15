@@ -11,6 +11,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -149,6 +150,73 @@ public class UsersWebServiceEndpointTest extends BaseRestAssuredTest {
 
         assertEquals(userId, getUserResponse.getUserId());
         assertEquals(requestModel.getAddresses().size(), getUserResponse.getAddresses().size());
+    }
 
+    @ParameterizedTest
+    @MethodSource("getValidUserSource")
+    final void testUpdateUser(final UserDetailsRequestModel requestModel) {
+        final UserDetailsResponseModel userDetailsResponseModel = given()
+                .log().all()
+                .contentType("application/json")
+                .accept("application/json")
+                .body(requestModel)
+                .when()
+                .post(CONTEXT_PATH + "/users")
+                .then()
+                .statusCode(200)
+                .contentType("application/json")
+                .extract()
+                .response()
+                .as(UserDetailsResponseModel.class);
+
+        repository.updateUserEmailVerificationStatus(true, userDetailsResponseModel.getUserId());
+        UserEntity user = repository.findByUserId(userDetailsResponseModel.getUserId());
+        assertEquals(user.getEmailVerified(), true);
+
+        Map<String, String> loginDetails = new HashMap<>();
+        loginDetails.put("email", requestModel.getEmail());
+        loginDetails.put("password", requestModel.getPassword());
+
+        Response response = given()
+                .log().all()
+                .contentType("application/json")
+                .accept("application/json")
+                .body(loginDetails)
+                .when()
+                .post(CONTEXT_PATH + "/users/login")
+                .then()
+                .statusCode(200)
+                .extract()
+                .response();
+
+        String authHeader = response.header("Authorization");
+        String userId = response.header("UserID");
+        assertEquals(userId, userDetailsResponseModel.getUserId());
+        assertNotNull(authHeader);
+
+        UserDetailsRequestModel updatedModel = new UserDetailsRequestModel();
+        BeanUtils.copyProperties(requestModel, updatedModel);
+        updatedModel.setLastName(RandomShortApi.english(randomStringLength));
+        updatedModel.setFirstName(RandomShortApi.english(randomStringLength));
+        updatedModel.setEmail(RandomShortApi.english(randomStringLength)+ "test1@test.com");
+
+        final UserDetailsResponseModel getUserResponse = given()
+                .log().all()
+                .contentType("application/json")
+                .pathParam("id", user.getUserId())
+                .accept("application/json")
+                .header("Authorization", authHeader)
+                .body(loginDetails)
+                .when()
+                .get(CONTEXT_PATH + "/users/{id}")
+                .then()
+                .statusCode(200)
+                .extract()
+                .response()
+                .as(UserDetailsResponseModel.class);
+
+        assertEquals(updatedModel.getFirstName(), getUserResponse.getFirstName());
+        assertEquals(updatedModel.getLastName(), getUserResponse.getLastName());
+        assertEquals(updatedModel.getEmail(), getUserResponse.getEmail());
     }
 }
