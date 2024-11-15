@@ -43,4 +43,19 @@ public class UserEntity implements Serializable {
 
     @OneToMany(mappedBy = "userDetails", cascade = CascadeType.ALL)
     private Collection<AddressEntity> addresses;
+
+    @Override
+    public String toString() {
+        return "UserEntity{" +
+                "id=" + id +
+                ", userId='" + userId + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", email='" + email + '\'' +
+                ", encryptedPassword='" + encryptedPassword + '\'' +
+                ", emailVerificationToken='" + emailVerificationToken + '\'' +
+                ", emailVerified=" + emailVerified +
+                ", addresses=" + addresses +
+                '}';
+    }
 }
