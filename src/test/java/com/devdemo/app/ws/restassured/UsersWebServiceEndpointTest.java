@@ -5,6 +5,9 @@ import com.devdemo.app.ws.repository.UserRepository;
 import com.devdemo.app.ws.ui.model.request.AddressRequestModel;
 import com.devdemo.app.ws.ui.model.request.UserDetailsRequestModel;
 import com.devdemo.app.ws.ui.model.response.UserDetailsResponseModel;
+import com.devdemo.app.ws.ui.model.response.operation.OperationStatusModel;
+import com.devdemo.app.ws.ui.model.response.operation.RequestOperationName;
+import com.devdemo.app.ws.ui.model.response.operation.RequestOperationStatus;
 import io.qala.datagen.RandomShortApi;
 import io.restassured.response.Response;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -218,5 +221,66 @@ public class UsersWebServiceEndpointTest extends BaseRestAssuredTest {
         assertEquals(updatedModel.getFirstName(), getUserResponse.getFirstName());
         assertEquals(updatedModel.getLastName(), getUserResponse.getLastName());
         assertEquals(updatedModel.getEmail(), getUserResponse.getEmail());
+    }
+
+    @ParameterizedTest
+    @MethodSource("getValidUserSource")
+    final void testDeleteUser(final UserDetailsRequestModel requestModel) {
+        final UserDetailsResponseModel userDetailsResponseModel = given()
+                .log().all()
+                .contentType("application/json")
+                .accept("application/json")
+                .body(requestModel)
+                .when()
+                .post(CONTEXT_PATH + "/users")
+                .then()
+                .statusCode(200)
+                .contentType("application/json")
+                .extract()
+                .response()
+                .as(UserDetailsResponseModel.class);
+
+        repository.updateUserEmailVerificationStatus(true, userDetailsResponseModel.getUserId());
+        UserEntity user = repository.findByUserId(userDetailsResponseModel.getUserId());
+        assertEquals(user.getEmailVerified(), true);
+
+        Map<String, String> loginDetails = new HashMap<>();
+        loginDetails.put("email", requestModel.getEmail());
+        loginDetails.put("password", requestModel.getPassword());
+
+        Response response = given()
+                .log().all()
+                .contentType("application/json")
+                .accept("application/json")
+                .body(loginDetails)
+                .when()
+                .post(CONTEXT_PATH + "/users/login")
+                .then()
+                .statusCode(200)
+                .extract()
+                .response();
+
+        String authHeader = response.header("Authorization");
+        String userId = response.header("UserID");
+        assertEquals(userId, userDetailsResponseModel.getUserId());
+        assertNotNull(authHeader);
+
+        OperationStatusModel deleteResponseModel = given()
+                .log().all()
+                .contentType("application/json")
+                .accept("application/json")
+                .header("Authorization", authHeader)
+                .pathParam("id", userId)
+                .when()
+                .delete(CONTEXT_PATH + "/users/{id}")
+                .then()
+                .statusCode(200)
+                .contentType("application/json")
+                .extract()
+                .response()
+                .as(OperationStatusModel.class);
+
+        assertEquals(deleteResponseModel.operationResult(), RequestOperationStatus.SUCCESS.name());
+        assertEquals(deleteResponseModel.operationName(), RequestOperationName.DELETE.name());
     }
 }
