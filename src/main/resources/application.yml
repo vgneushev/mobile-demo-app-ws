@@ -11,9 +11,11 @@ spring:
       ddl-auto: update
 
 server:
+  protocol: http://
+  address: localhost
+  port: 8888
   servlet:
     context-path: /mobile-app-ws
-  port: 8888
 
 logging:
   level:
