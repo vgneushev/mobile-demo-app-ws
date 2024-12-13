@@ -14,6 +14,12 @@ import com.devdemo.app.ws.ui.model.response.operation.OperationStatusModel;
 import com.devdemo.app.ws.ui.model.response.operation.RequestOperationName;
 import com.devdemo.app.ws.ui.model.response.operation.RequestOperationStatus;
 import com.devdemo.app.ws.ui.model.response.UserDetailsResponseModel;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -53,7 +59,12 @@ public class UserController {
                 userService.getUserById(id),
                 UserDetailsResponseModel.class);
     }
-
+    @Operation(parameters = {
+            @Parameter(in = ParameterIn.HEADER
+                    , description = "Bearer JWT Token"
+                    , name = "authorization"
+                    , content = @Content(array = @ArraySchema(schema = @Schema(type = "string"))))
+    })
     @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public List<UserDetailsResponseModel> getUsers(
             @RequestParam(value = "page", defaultValue = "0") final int page,
