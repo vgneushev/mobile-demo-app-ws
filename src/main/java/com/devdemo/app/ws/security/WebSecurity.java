@@ -1,5 +1,6 @@
 package com.devdemo.app.ws.security;
 
+import com.devdemo.app.ws.shared.util.SpringDocUrl;
 import lombok.NonNull;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -52,6 +53,9 @@ public class WebSecurity {
                                 .requestMatchers(HttpMethod.POST, SecurityConstants.RESET_PASSWORD_REQUEST_URL)
                                 .permitAll()
                                 .requestMatchers(HttpMethod.POST, SecurityConstants.RESET_PASSWORD_URL)
+                                .permitAll()
+                                .requestMatchers(SpringDocUrl.API_V3.getUrl(), SpringDocUrl.CONFIG.getUrl(),
+                                        SpringDocUrl.SWAGGER.getUrl(), SpringDocUrl.WEBJAR.getUrl())
                                 .permitAll()
                                 .requestMatchers(SecurityConstants.H2_CONSOLE_URL)
                                 .permitAll()

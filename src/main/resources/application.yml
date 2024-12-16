@@ -17,6 +17,9 @@ server:
   servlet:
     context-path: /mobile-app-ws
 
+springdoc:
+      show-login-endpoint: true
+
 logging:
   level:
     org:
