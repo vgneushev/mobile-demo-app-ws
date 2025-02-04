@@ -4,7 +4,6 @@ import com.devdemo.app.ws.io.entity.AddressEntity;
 import com.devdemo.app.ws.io.entity.UserEntity;
 import com.devdemo.app.ws.repository.UserRepository;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,7 +15,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -140,5 +138,13 @@ public class UserRepositoryTest {
         repository.updateUserEmailVerificationStatus(newStatus, "12342");
         user = repository.findByUserId("12342");
         assertEquals(user.getEmailVerified(), newStatus);
+    }
+
+    @Test
+    final void testGetUserByUserId() {
+        final String userId = "1234";
+        UserEntity user = repository.findByUserId(userId);
+        assertNotNull(user);
+        assertEquals(user.getUserId(), userId);
     }
 }
