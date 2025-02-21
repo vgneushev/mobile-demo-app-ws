@@ -18,7 +18,7 @@ public class RoleEntity implements Serializable {
     private long id;
 
     @Column(nullable = false, length = 20)
-    private String roleName;
+    private String name;
 
     @ManyToMany(mappedBy = "roles")
     private Collection<UserEntity> users;
@@ -29,4 +29,7 @@ public class RoleEntity implements Serializable {
             inverseJoinColumns = @JoinColumn(name = "authorities_id", referencedColumnName = "id"))
     private Collection<AuthorityEntity> authorities;
 
+    public RoleEntity(String name) {
+        this.name = name;
+    }
 }
