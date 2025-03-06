@@ -10,6 +10,7 @@ public class SecurityConstants {
     public static final String AUTH_HEADER = "Authorization";
     public static final String USER_ID_HEADER = "UserID";
     public static final String SIGN_UP_URL = "/users";
+    public static final String USERS_URL = "/users/**";
     public static final String LOGIN_URL = "/users/login";
     public static final String VERIFICATION_EMAIL_URL = "/users/email-verification";
     public static final String H2_CONSOLE_URL = "/h2-console/**";

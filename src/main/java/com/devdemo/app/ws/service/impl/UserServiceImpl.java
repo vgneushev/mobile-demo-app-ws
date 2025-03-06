@@ -4,6 +4,7 @@ import com.devdemo.app.ws.exception.UserServiceException;
 import com.devdemo.app.ws.io.entity.AddressEntity;
 import com.devdemo.app.ws.io.entity.PasswordResetTokenEntity;
 import com.devdemo.app.ws.repository.PasswordResetTokenRepository;
+import com.devdemo.app.ws.security.UserPrincipal;
 import com.devdemo.app.ws.service.UserService;
 import com.devdemo.app.ws.shared.dto.UserDto;
 import com.devdemo.app.ws.shared.util.AmazonSES;
@@ -231,7 +232,7 @@ public class UserServiceImpl implements UserService {
         if (userEntity == null) {
             throw new UsernameNotFoundException(email);
         }
-        return new User(email, userEntity.getEncryptedPassword(), userEntity.getEmailVerified(),
-                true, true, true, new ArrayList<>());
+
+        return new UserPrincipal(userEntity);
     }
 }
