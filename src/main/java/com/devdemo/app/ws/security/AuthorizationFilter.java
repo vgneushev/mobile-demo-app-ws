@@ -71,11 +71,11 @@ public class AuthorizationFilter extends BasicAuthenticationFilter {
         Jwt<Header, Claims> jwt = (Jwt<Header, Claims>) jwtParser.parse(token);
         String user = jwt.getBody().getSubject();
 
-        if (user == null) {
-            return null;
-        }
+        if (user == null) return null;
 
         UserEntity userEntity = userRepository.findByEmail(user);
+        if (userEntity == null) return null;
+
         UserPrincipal userPrincipal = new UserPrincipal(userEntity);
         return new UsernamePasswordAuthenticationToken(user, null, userPrincipal.getAuthorities());
     }

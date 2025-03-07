@@ -3,9 +3,6 @@ package com.devdemo.app.ws.security;
 import com.devdemo.app.ws.io.entity.AuthorityEntity;
 import com.devdemo.app.ws.io.entity.RoleEntity;
 import com.devdemo.app.ws.io.entity.UserEntity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -14,20 +11,28 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
-@AllArgsConstructor
 @Data
 public class UserPrincipal implements UserDetails {
+
     @Serial
     private static final long serialVersionUID = 12345622785432L;
 
     private UserEntity userEntity;
 
+    private String id;
+
+    public UserPrincipal(UserEntity userEntity) {
+        this.userEntity = userEntity;
+        this.id = userEntity.getUserId();
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        List<GrantedAuthority> authorities = new ArrayList();
-        List<AuthorityEntity> authorityEntities = new ArrayList();
+        Collection<GrantedAuthority> authorities = new HashSet<>();
+        Collection<AuthorityEntity> authorityEntities = new HashSet();
 
         Collection<RoleEntity> roleEntities = userEntity.getRoles();
 

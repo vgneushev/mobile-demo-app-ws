@@ -3,7 +3,9 @@ package com.devdemo.app.ws.service.impl;
 import com.devdemo.app.ws.exception.UserServiceException;
 import com.devdemo.app.ws.io.entity.AddressEntity;
 import com.devdemo.app.ws.io.entity.PasswordResetTokenEntity;
+import com.devdemo.app.ws.io.entity.RoleEntity;
 import com.devdemo.app.ws.repository.PasswordResetTokenRepository;
+import com.devdemo.app.ws.repository.RoleRepository;
 import com.devdemo.app.ws.security.UserPrincipal;
 import com.devdemo.app.ws.service.UserService;
 import com.devdemo.app.ws.shared.dto.UserDto;
@@ -34,6 +36,7 @@ import org.springframework.data.domain.Pageable;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
 @Component
@@ -50,6 +53,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     AmazonSES amazonSES;
+
+    @Autowired
+    RoleRepository roleRepository;
 
     @Autowired
     Util util;
@@ -75,6 +81,15 @@ public class UserServiceImpl implements UserService {
                     addressEntity.setAddressId(RandomShortApi.alphanumeric(Constant.ADDRESS_ID_LENGTH));
                     addressEntity.setUserDetails(userEntity);
                 });
+        Collection<RoleEntity> roleEntities = new HashSet<>();
+        for (String role : userDto.getRoles()) {
+            RoleEntity roleEntity = roleRepository.findByName(role);
+            if (roleEntity != null) {
+                roleEntities.add(roleEntity);
+            }
+        }
+
+        userEntity.setRoles(roleEntities);
 
         final UserEntity savedUserDetails = userRepository.save(userEntity);
         final UserDto returnValue = mapper.map(savedUserDetails, UserDto.class);

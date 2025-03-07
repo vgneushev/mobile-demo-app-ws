@@ -6,6 +6,7 @@ import com.devdemo.app.ws.io.entity.UserEntity;
 import com.devdemo.app.ws.repository.AuthorityRepository;
 import com.devdemo.app.ws.repository.RoleRepository;
 import com.devdemo.app.ws.repository.UserRepository;
+import com.devdemo.app.ws.shared.Roles;
 import com.devdemo.app.ws.shared.util.Util;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,8 +41,8 @@ public class InitialUsersSetup {
         final AuthorityEntity writeAuthority = createAuthority("WRITE_AUTHORITY");
         final AuthorityEntity deleteAuthority = createAuthority("DELETE_AUTHORITY");
 
-        final RoleEntity adminRole = createRole("ROLE_ADMIN", List.of(readAuthority, writeAuthority, deleteAuthority));
-        final RoleEntity userRole = createRole("ROLE_USER", List.of(readAuthority, writeAuthority));
+        final RoleEntity adminRole = createRole(Roles.ROLE_ADMIN.name(), List.of(readAuthority, writeAuthority, deleteAuthority));
+        final RoleEntity userRole = createRole(Roles.ROLE_USER.name(), List.of(readAuthority, writeAuthority));
 
         UserEntity adminUser = new UserEntity();
         adminUser.setFirstName("Vlad");
