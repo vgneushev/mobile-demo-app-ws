@@ -7,6 +7,9 @@ import java.util.Base64;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
+import com.devdemo.app.ws.io.entity.UserEntity;
+import com.devdemo.app.ws.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -25,8 +28,11 @@ import jakarta.servlet.http.HttpServletResponse;
 
 public class AuthorizationFilter extends BasicAuthenticationFilter {
 
-    public AuthorizationFilter(AuthenticationManager authenticationManager) {
+    private final UserRepository userRepository;
+
+    public AuthorizationFilter(AuthenticationManager authenticationManager, UserRepository userRepository) {
         super(authenticationManager);
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -63,13 +69,15 @@ public class AuthorizationFilter extends BasicAuthenticationFilter {
                 .build();
 
         Jwt<Header, Claims> jwt = (Jwt<Header, Claims>) jwtParser.parse(token);
-        String subject = jwt.getBody().getSubject();
+        String user = jwt.getBody().getSubject();
 
-        if (subject == null) {
-            return null;
-        }
+        if (user == null) return null;
 
-        return new UsernamePasswordAuthenticationToken(subject, null, new ArrayList<>());
+        UserEntity userEntity = userRepository.findByEmail(user);
+        if (userEntity == null) return null;
+
+        UserPrincipal userPrincipal = new UserPrincipal(userEntity);
+        return new UsernamePasswordAuthenticationToken(user, null, userPrincipal.getAuthorities());
     }
 
 }

@@ -54,7 +54,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
         SecretKey secretKey = new SecretKeySpec(secretKeyBytes, SignatureAlgorithm.HS512.getJcaName());
         Instant now = Instant.now();
 
-        String userName = ((User) auth.getPrincipal()).getUsername();
+        String userName = ((UserPrincipal) auth.getPrincipal()).getUsername();
         String token = Jwts.builder()
                 .setSubject(userName)
                 .setExpiration(

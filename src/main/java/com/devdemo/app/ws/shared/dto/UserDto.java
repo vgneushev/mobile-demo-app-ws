@@ -20,6 +20,8 @@ public class UserDto implements Serializable {
     private String emailVerificationToken;
     private Boolean emailVerified = false;
     private Collection<AddressDto> addresses;
+    private Collection<String> roles;
+
     @Override
     public String toString() {
         return "UserDto{" +

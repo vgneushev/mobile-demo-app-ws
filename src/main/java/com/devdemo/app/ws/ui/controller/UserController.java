@@ -3,6 +3,7 @@ package com.devdemo.app.ws.ui.controller;
 import com.devdemo.app.ws.exception.UserServiceException;
 import com.devdemo.app.ws.service.AddressService;
 import com.devdemo.app.ws.service.UserService;
+import com.devdemo.app.ws.shared.Roles;
 import com.devdemo.app.ws.shared.dto.AddressDto;
 import com.devdemo.app.ws.shared.dto.UserDto;
 import com.devdemo.app.ws.ui.model.request.PasswordResetModel;
@@ -30,11 +31,15 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -59,6 +64,7 @@ public class UserController {
                 userService.getUserById(id),
                 UserDetailsResponseModel.class);
     }
+    @PostAuthorize("hasRole('ROLE_ADMIN') or returnObject.userId == principal.id")
     @Operation(parameters = {
             @Parameter(in = ParameterIn.HEADER
                     , description = "Bearer JWT Token"
@@ -87,7 +93,9 @@ public class UserController {
             throw new UserServiceException(ErrorMessages.MISSING_REQUIRED_FIELD.getErrorMessage());
         }
 
-        final UserDto userDto = mapper.map(requestModel, UserDto.class);
+        UserDto userDto = mapper.map(requestModel, UserDto.class);
+        userDto.setRoles(new HashSet<>(List.of(Roles.ROLE_USER.name())));
+
         final UserDto createdUser = userService.createUser(userDto);
         return mapper.map(createdUser, UserDetailsResponseModel.class);
     }
@@ -105,6 +113,9 @@ public class UserController {
         return mapper.map(updatedUser, UserDetailsResponseModel.class);
     }
 
+    @PreAuthorize("hasAuthority('DELETE_AUTHORITY')")
+    //@PreAuthorize("hasRole('ROLE_ADMIN') or #id == principal.id")
+    //@Secured("ROLE_ADMIN")
     @DeleteMapping(
             path = "/{id}",
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})

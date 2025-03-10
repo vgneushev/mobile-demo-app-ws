@@ -1,5 +1,6 @@
 package com.devdemo.app.ws.security;
 
+import com.devdemo.app.ws.repository.UserRepository;
 import com.devdemo.app.ws.shared.util.SpringDocUrl;
 import lombok.NonNull;
 import org.springframework.context.annotation.Bean;
@@ -7,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -22,15 +24,18 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(securedEnabled = true, prePostEnabled = true)
 public class WebSecurity {
-
     private final UserDetailsService userDetailsService;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
 
     public WebSecurity(@NonNull final UserDetailsService userDetailsService,
-                       @NonNull final BCryptPasswordEncoder passwordEncoder) {
+                       @NonNull final BCryptPasswordEncoder passwordEncoder,
+                       @NonNull final UserRepository userRepository) {
         this.userDetailsService = userDetailsService;
         this.passwordEncoder = passwordEncoder;
+        this.userRepository = userRepository;
     }
 
     @Bean
@@ -59,11 +64,13 @@ public class WebSecurity {
                                 .permitAll()
                                 .requestMatchers(SecurityConstants.H2_CONSOLE_URL)
                                 .permitAll()
+                                .requestMatchers(HttpMethod.DELETE, SecurityConstants.USERS_URL)
+                                .hasAuthority("DELETE_ AUTHORITY")
                                 .anyRequest()
                                 .authenticated())
                 .authenticationManager(authenticationManager)
                 .addFilter(filter)
-                .addFilter(new AuthorizationFilter(authenticationManager))
+                .addFilter(new AuthorizationFilter(authenticationManager, userRepository))
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.headers().frameOptions().disable();

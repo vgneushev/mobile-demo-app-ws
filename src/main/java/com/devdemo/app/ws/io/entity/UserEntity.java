@@ -38,6 +38,12 @@ public class UserEntity implements Serializable {
     @Nullable
     private String emailVerificationToken;
 
+    @ManyToMany(cascade = {CascadeType.PERSIST}, fetch = FetchType.EAGER)
+    @JoinTable(name="users_roles",
+            joinColumns = @JoinColumn(name = "users_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "roles_id", referencedColumnName = "id"))
+    private Collection<RoleEntity> roles;
+
     @Column(nullable = false)
     private Boolean emailVerified = false;
 
